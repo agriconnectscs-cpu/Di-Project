@@ -40,6 +40,7 @@ export const useGenerateInvoicePDF = () => {
 
     onSuccess: (data) => {
       if (data) {
+        console.log("PDF generated successfully:", data);
         window.open(data, "_blank");
       } else {
         toast.error("PDF URL missing in response.");
