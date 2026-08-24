@@ -162,7 +162,7 @@ const SalesTaxInvoicePage = () => {
         discPercent: 0,
         discountAmount: 0,
         grossAmount: 0,
-        taxPercent: 18,
+        taxPercent: 0,
         taxAmount: 0,
         receivableAmount: 0,
         lineDescription: "",
@@ -355,6 +355,43 @@ const SalesTaxInvoicePage = () => {
     },
     onError: (err) => {
       toast.error(err.message || "Error generating report");
+    },
+  });
+
+  // Export Report Mutation (Excel)
+  const { mutate: exportReport, isPending: isExportLoading } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/RPT/DI/GetSalesTaxInvoiceDetail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${loginAccessToken}`,
+          accept: "text/plain",
+        },
+        body: JSON.stringify({
+          appProductReportId: 0,
+          exportProcedureName: "invoice",
+          targetSource: "SalesTaxInvoice",
+          filters: JSON.stringify({
+            FromDate: dateFilters.FromDate,
+            ToDate: dateFilters.ToDate,
+          }),
+          outputResultType: "EXCEL",
+          dataExportType: "EXCEL",
+        }),
+      });
+
+      return handleApiResponse(res, "Failed to export report");
+    },
+    onSuccess: (result) => {
+      if (result?.data) {
+        window.open(result.data, "_blank");
+      } else {
+        toast.error("Export URL not found");
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || "Error exporting report");
     },
   });
 
@@ -685,7 +722,7 @@ const SalesTaxInvoicePage = () => {
           discPercent: 0,
           discountAmount: 0,
           grossAmount: 0,
-          taxPercent: 18,
+          taxPercent: 0,
           taxAmount: 0,
           receivableAmount: 0,
           lineDescription: "",
@@ -1039,6 +1076,22 @@ const SalesTaxInvoicePage = () => {
             title={isReportLoading ? "Generating..." : "View Report"}
             disabled={isReportLoading}
             className={`${isReportLoading ? "[&>svg]:animate-spin shrink-0" : ""} 
+              ${isDarkMode
+                ? "text-emerald-400! border-emerald-500/30! bg-emerald-500/5! hover:bg-emerald-500/20! hover:text-emerald-300! hover:border-emerald-500/50!"
+                : "text-emerald-600! border-emerald-200! bg-emerald-50! hover:bg-emerald-600! hover:text-white! hover:border-emerald-600!"
+              } shadow-sm transition-all duration-300`}
+          />
+
+          <CustomButton
+            onClick={() => {
+              if (!permission(canView, "No permission to view report")) return;
+              exportReport();
+            }}
+            icon={isExportLoading ? Loader : FileText}
+            isDarkMode={isDarkMode}
+            title={isExportLoading ? "Exporting..." : "Export"}
+            disabled={isExportLoading}
+            className={`${isExportLoading ? "[&>svg]:animate-spin shrink-0" : ""} 
               ${isDarkMode
                 ? "text-emerald-400! border-emerald-500/30! bg-emerald-500/5! hover:bg-emerald-500/20! hover:text-emerald-300! hover:border-emerald-500/50!"
                 : "text-emerald-600! border-emerald-200! bg-emerald-50! hover:bg-emerald-600! hover:text-white! hover:border-emerald-600!"
@@ -1852,7 +1905,7 @@ const SalesTaxInvoicePage = () => {
                             price: 0,
                             orderAmount: 0,
                             grossAmount: 0,
-                            taxPercent: 18,
+                            taxPercent: 0,
                             taxAmount: 0,
                             receivableAmount: 0,
                             lineDescription: "",
