@@ -65,8 +65,6 @@ const CompanyPage = () => {
     currencySymbol: "",
   });
 
-  console.log("formData:", formData); // Debugging line to check formData state
-
   // Fetch company data
   const { data: companyData, isLoading: companyDataIsLoading } = useQuery({
     queryKey: ["companyData", loginAccessToken],
@@ -130,7 +128,7 @@ const CompanyPage = () => {
           file: selectedFile,
           pathUrl: "CompanyImages",
         });
-        logoImageURL = uploadResult.fileURL;
+        logoImageURL = uploadResult.webPURL;
         logoThumbImageURL = uploadResult.thumbnailURL;
       }
 
@@ -282,7 +280,6 @@ const CompanyPage = () => {
               />
             </div>
 
-{/* fileURL */}
             <CustomInput
               id="clientName"
               label="Client Name"

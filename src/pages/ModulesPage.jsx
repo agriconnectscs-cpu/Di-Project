@@ -113,7 +113,7 @@ const ModulesPage = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span>
               </span>
-              Production Env
+              Testing Env
             </span>
 
             <button
