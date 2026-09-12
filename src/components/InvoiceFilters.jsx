@@ -46,21 +46,21 @@ const InvoiceFilters = ({
                       isDarkMode ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
-                    Fiscal Year
+D                    Month Range
                   </span>
                   <span
                     className={`text-[10px] font-bold ${
                       isDarkMode ? "text-purple-400/90" : "text-purple-800"
                     }`}
                   >
-                    July 1st — June 30th
+                    {dayjs().format("MMMM YYYY")}
                   </span>
                 </div>
               </div>
 
               {/* Date Inputs */}
               <div className="flex flex-1 items-center gap-4">
-                <div className="flex-1 min-w-[140px] relative mt-1.5">
+                <div className="flex-1 min-w-35 relative mt-1.5">
                   <span
                     className={`absolute -top-2 left-3 px-1.5 text-[10px] font-bold z-10 transition-colors uppercase tracking-wider ${
                       isDarkMode
@@ -103,7 +103,7 @@ const InvoiceFilters = ({
                   →
                 </div>
 
-                <div className="flex-1 min-w-[140px] relative mt-1.5">
+                <div className="flex-1 min-w-35 relative mt-1.5">
                   <span
                     className={`absolute -top-2 left-3 px-1.5 text-[10px] font-bold z-10 transition-colors uppercase tracking-wider ${
                       isDarkMode
@@ -145,10 +145,10 @@ const InvoiceFilters = ({
                     ? "bg-white/5 text-gray-400 hover:bg-purple-700 hover:text-white border border-white/5"
                     : "bg-gray-100 text-gray-500 hover:bg-purple-600 hover:text-white"
                 }`}
-                title="Reset to current academic year"
+                title="Clear to current month"
               >
                 <RotateCcw size={16} />
-                <span className="inline">Reset</span>
+                <span className="inline">Clear</span>
               </button>
             </div>
           </div>

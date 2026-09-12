@@ -1,49 +1,49 @@
-import dayjs from "dayjs";
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
-import { Table, Tooltip, Spin } from "antd";
-import { useLocation } from "react-router-dom";
-import { useState, useMemo, useEffect, lazy, Suspense } from "react";
-import { AlertCircle, Loader, Redo, FileSearch, X } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import dayjs from 'dayjs';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+import {Table, Tooltip, Spin} from 'antd';
+import {useLocation} from 'react-router-dom';
+import {useState, useMemo, useEffect, lazy, Suspense} from 'react';
+import {AlertCircle, Loader, Redo, FileSearch, X} from 'lucide-react';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
-import pdfIcon from "../../../../assets/pdf.webp";
+import pdfIcon from '../../../../assets/pdf.webp';
 
-const Lottie = lazy(() => import("lottie-react"));
-import failedAnimation from "../../../../assets/lottie/Failed.json";
-import successAnimation from "../../../../assets/lottie/submit.json";
-import billingAnimation from "../../../../assets/lottie/Papers.json";
-import pendingAnimation from "../../../../assets/lottie/WarningStatus.json";
+const Lottie = lazy(() => import('lottie-react'));
+import failedAnimation from '../../../../assets/lottie/Failed.json';
+import successAnimation from '../../../../assets/lottie/submit.json';
+import billingAnimation from '../../../../assets/lottie/Papers.json';
+import pendingAnimation from '../../../../assets/lottie/WarningStatus.json';
 
-import { useTheme } from "../../../../ThemeProvider";
+import {useTheme} from '../../../../ThemeProvider';
 
-import { usePagePermissions } from "../../../../permissions";
+import {usePagePermissions} from '../../../../permissions';
 
-import { useGetAuth } from "../../../../hooks/useGetAuth";
-import { useGetInvoices } from "../../../../hooks/useGetInvoices";
-import { useCloseOnEscape } from "../../../../hooks/useCloseOnEscape";
-import { useGenerateInvoicePDF } from "../../../../hooks/useGenerateInvoicePDF";
+import {useGetAuth} from '../../../../hooks/useGetAuth';
+import {useGetInvoices} from '../../../../hooks/useGetInvoices';
+import {useCloseOnEscape} from '../../../../hooks/useCloseOnEscape';
+import {useGenerateInvoicePDF} from '../../../../hooks/useGenerateInvoicePDF';
 
-import SearchBar from "../../../../components/SearchBar";
-import SummaryCard from "../../../../components/SummaryCard";
-import Breadcrumb from "../../../../components/common/Breadcrumb";
-import FilterToggle from "../../../../components/common/FilterToggle";
-import InvoiceFilters from "../../../../components/InvoiceFilters";
+import SearchBar from '../../../../components/SearchBar';
+import SummaryCard from '../../../../components/SummaryCard';
+import Breadcrumb from '../../../../components/common/Breadcrumb';
+import FilterToggle from '../../../../components/common/FilterToggle';
+import InvoiceFilters from '../../../../components/InvoiceFilters';
 // Imports End-----
 
 const FBRInvoicePage = () => {
-  const { isDarkMode } = useTheme();
-  const { loginAccessToken } = useGetAuth();
-  const { generateInvoicePDF, pdfLoadingIds } = useGenerateInvoicePDF();
+  const {isDarkMode} = useTheme();
+  const {loginAccessToken} = useGetAuth();
+  const {generateInvoicePDF, pdfLoadingIds} = useGenerateInvoicePDF();
 
-  const { canPost, canView, permission } = usePagePermissions();
+  const {canPost, canView, permission} = usePagePermissions();
 
   const location = useLocation();
   const queryClient = useQueryClient();
 
-  const [globalSearch, setGlobalSearch] = useState("");
+  const [globalSearch, setGlobalSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState(
-    location.state?.statusFilter || "Pending",
+    location.state?.statusFilter || 'Pending'
   );
   const [postingInvoiceId, setPostingInvoiceId] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -54,7 +54,7 @@ const FBRInvoicePage = () => {
 
   const [responseModal, setResponseModal] = useState({
     open: false,
-    message: "",
+    message: '',
     isError: false,
     data: null,
   });
@@ -70,31 +70,31 @@ const FBRInvoicePage = () => {
     const currentMonth = today.month();
     const startYear = currentMonth >= 6 ? today.year() : today.year() - 1;
     return {
-      FromDate: dayjs(`${startYear}-07-01`).format("YYYY-MM-DD"),
-      ToDate: dayjs(`${startYear + 1}-06-30`).format("YYYY-MM-DD"),
+      FromDate: dayjs(`${startYear}-07-01`).format('YYYY-MM-DD'),
+      ToDate: dayjs(`${startYear + 1}-06-30`).format('YYYY-MM-DD'),
     };
   };
 
   const [showFilters, setShowFilters] = useState(false);
   const [dateFilters, setDateFilters] = useState(getAcademicYearDates);
 
-  const { data: invoiceList = [], isLoading: invoiceIsLoading } =
+  const {data: invoiceList = [], isLoading: invoiceIsLoading} =
     useGetInvoices(dateFilters);
 
-  const { mutate: postInvoice, isPending: postInvoiceIsLoading } = useMutation({
+  const {mutate: postInvoice, isPending: postInvoiceIsLoading} = useMutation({
     mutationFn: async (invoiceId) => {
       setPostingInvoiceId(invoiceId);
 
       const res = await fetch(
         `/api/DI/FBR/PostInvoice?InvoiceId=${invoiceId}`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            accept: "text/plain",
+            'Content-Type': 'application/json',
+            accept: 'text/plain',
             Authorization: `Bearer ${loginAccessToken}`,
           },
-        },
+        }
       );
 
       if (!res.ok) {
@@ -106,7 +106,7 @@ const FBRInvoicePage = () => {
     },
 
     onSuccess: (data) => {
-      let backendMessage = "";
+      let backendMessage = '';
       let isErrorFlag = false;
 
       let parsedData = null;
@@ -114,9 +114,9 @@ const FBRInvoicePage = () => {
       try {
         const parsed = JSON.parse(data);
         parsedData = parsed;
-        if (parsed && typeof parsed === "object") {
-          backendMessage = parsed.message || "";
-          const status = parsed.statusCode ? ` (${parsed.statusCode})` : "";
+        if (parsed && typeof parsed === 'object') {
+          backendMessage = parsed.message || '';
+          const status = parsed.statusCode ? ` (${parsed.statusCode})` : '';
 
           if (parsed.statusCode && parsed.statusCode >= 400) {
             isErrorFlag = true;
@@ -135,7 +135,7 @@ const FBRInvoicePage = () => {
 
       const displayMessage = isErrorFlag
         ? `${backendMessage}`
-        : `${backendMessage ? `: ${backendMessage}` : ""}`;
+        : `${backendMessage ? `: ${backendMessage}` : ''}`;
 
       setResponseModal({
         open: true,
@@ -146,7 +146,7 @@ const FBRInvoicePage = () => {
 
       setShowDetails(false);
 
-      queryClient.invalidateQueries(["invoiceList"]);
+      queryClient.invalidateQueries(['invoiceList']);
       setPostingInvoiceId(null);
     },
 
@@ -158,9 +158,9 @@ const FBRInvoicePage = () => {
       try {
         const parsed = JSON.parse(error.message);
         errorData = parsed;
-        if (parsed && typeof parsed === "object") {
-          const msg = parsed.message || "An error occurred";
-          const status = parsed.statusCode ? ` (${parsed.statusCode})` : "";
+        if (parsed && typeof parsed === 'object') {
+          const msg = parsed.message || 'An error occurred';
+          const status = parsed.statusCode ? ` (${parsed.statusCode})` : '';
           backendMessage = `${msg}${status}`;
         }
         // eslint-disable-next-line no-unused-vars
@@ -177,7 +177,7 @@ const FBRInvoicePage = () => {
 
       setShowDetails(false);
 
-      queryClient.invalidateQueries(["invoiceList"]);
+      queryClient.invalidateQueries(['invoiceList']);
       setPostingInvoiceId(null);
     },
   });
@@ -187,7 +187,7 @@ const FBRInvoicePage = () => {
     isLoading: isRawDataLoading,
     isFetched,
   } = useQuery({
-    queryKey: ["getRawData", selectedRawId],
+    queryKey: ['getRawData', selectedRawId],
     queryFn: async () => {
       const res = await fetch(
         `/api/DI/FBR/GetRawData?invoiceId=${selectedRawId}`,
@@ -195,9 +195,9 @@ const FBRInvoicePage = () => {
           headers: {
             Authorization: `Bearer ${loginAccessToken}`,
           },
-        },
+        }
       );
-      if (!res.ok) throw new Error("Failed to fetch settings");
+      if (!res.ok) throw new Error('Failed to fetch settings');
       const result = await res.json();
       return result?.data ?? null;
     },
@@ -214,32 +214,32 @@ const FBRInvoicePage = () => {
 
   useEffect(() => {
     if (isFetched && !isRawDataLoading && selectedRawId) {
-      setRawDataModal({ open: true });
+      setRawDataModal({open: true});
     }
   }, [isFetched, isRawDataLoading, selectedRawId]);
 
   useCloseOnEscape(responseModal.open, () =>
     setResponseModal({
       open: false,
-      message: "",
+      message: '',
       isError: false,
       data: null,
-    }),
+    })
   );
 
   useCloseOnEscape(rawDataModal.open, () => {
-    setRawDataModal({ open: false });
+    setRawDataModal({open: false});
     setSelectedRawId(null);
   });
 
   useEffect(() => {
     if (responseModal.open || rawDataModal.open) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, [responseModal.open, rawDataModal.open]);
 
@@ -249,21 +249,21 @@ const FBRInvoicePage = () => {
       ? invoiceList.map((item, i) => ({
           key: item.invoiceId || `invoice-${i}`,
           sr: i + 1,
-          integrationStatus: item.integrationStatus ?? "N/A",
-          integrationResponse: item.integrationResponse ?? "",
-          invoiceOn: item.invoiceOn ?? "N/A",
-          invoiceId: item.invoiceId ?? "N/A",
-          invoiceNo: item.invoiceNo ?? "N/A",
-          partyName: item.partyName ?? "N/A",
-          partyLocationName: item.partyLocationName ?? "N/A",
-          ntn: item.ntn ?? "N/A",
-          gst: item.gst ?? "N/A",
-          cnic: item.cnic ?? "N/A",
+          integrationStatus: item.integrationStatus ?? 'N/A',
+          integrationResponse: item.integrationResponse ?? '',
+          invoiceOn: item.invoiceOn ?? 'N/A',
+          invoiceId: item.invoiceId ?? 'N/A',
+          invoiceNo: item.invoiceNo ?? 'N/A',
+          partyName: item.partyName ?? 'N/A',
+          partyLocationName: item.partyLocationName ?? 'N/A',
+          ntn: item.ntn ?? 'N/A',
+          gst: item.gst ?? 'N/A',
+          cnic: item.cnic ?? 'N/A',
           totalAmount: item.totalAmount ?? 0,
           totalTax: item.totalTax ?? 0,
           totalReceivable: (item.totalAmount ?? 0) + (item.totalTax ?? 0),
-          integrationRefNo: item.integrationRefNo ?? "",
-          lastModifiedOn: item.lastModifiedOn ?? "N/A",
+          integrationRefNo: item.integrationRefNo ?? '',
+          lastModifiedOn: item.lastModifiedOn ?? 'N/A',
         }))
       : [];
   }, [invoiceList]);
@@ -272,30 +272,30 @@ const FBRInvoicePage = () => {
   const totalInvoices = invoicesList.length;
 
   const submitInvoices = invoicesList.filter(
-    (o) => o.integrationStatus === "Success",
+    (o) => o.integrationStatus === 'Success'
   ).length;
 
   const pendingInvoices = invoicesList.filter(
-    (i) => !["Success", "Failed"].includes(i.integrationStatus),
+    (i) => !['Success', 'Failed'].includes(i.integrationStatus)
   ).length;
 
   const failedInvoices = invoicesList.filter(
-    (i) => i.integrationStatus === "Failed",
+    (i) => i.integrationStatus === 'Failed'
   ).length;
 
   // Function to handle summary card click
   const handleSummaryCardClick = (status) => {
     setStatusFilter(status);
-    setGlobalSearch("");
+    setGlobalSearch('');
   };
 
   const filteredData = useMemo(() => {
     const statusFilteredData = invoicesList.filter((item) => {
-      if (statusFilter === "All") {
+      if (statusFilter === 'All') {
         return true;
       }
-      if (statusFilter === "Pending") {
-        return !["Success", "Failed"].includes(item.integrationStatus);
+      if (statusFilter === 'Pending') {
+        return !['Success', 'Failed'].includes(item.integrationStatus);
       }
       return item.integrationStatus === statusFilter;
     });
@@ -326,32 +326,32 @@ const FBRInvoicePage = () => {
   //   Table Columns
   const columns = [
     {
-      title: "Sr.",
-      dataIndex: "sr",
+      title: 'Sr.',
+      dataIndex: 'sr',
       width: 60,
       sorter: (a, b) => a.sr - b.sr,
-      align: "center",
+      align: 'center',
     },
     {
-      title: "DATE",
-      key: "invoice_date",
+      title: 'DATE',
+      key: 'invoice_date',
       width: 80,
-      align: "right",
+      align: 'right',
       sorter: (a, b) => dayjs(a.invoiceOn).unix() - dayjs(b.invoiceOn).unix(),
       render: (_, record) => (
         <div className="flex flex-col py-0.5 leading-tight">
           <span
             className={`text-[11px] font-bold ${
-              isDarkMode ? "text-gray-200" : "text-gray-700"
+              isDarkMode ? 'text-gray-200' : 'text-gray-700'
             }`}
           >
             {record.invoiceOn
-              ? dayjs(record.invoiceOn).format("DD MMM YYYY")
-              : "N/A"}
+              ? dayjs(record.invoiceOn).format('DD MMM YYYY')
+              : 'N/A'}
           </span>
           <span
             className={`text-[10px] font-black mt-0.5 tracking-tight ${
-              isDarkMode ? "text-purple-400" : "text-purple-600"
+              isDarkMode ? 'text-purple-400' : 'text-purple-600'
             }`}
           >
             #{record.invoiceNo}
@@ -360,52 +360,60 @@ const FBRInvoicePage = () => {
       ),
     },
     {
-      title: "BUYER",
-      dataIndex: "partyName",
+      title: 'BUYER',
+      dataIndex: 'partyName',
       width: 215,
       ellipsis: true,
       sorter: (a, b) => a.partyName.localeCompare(b.partyName),
       render: (_, record) => (
         <div className="flex flex-col">
           <span className="font-medium text-left truncate max-w-50">
-            {record.partyName || "N/A"}
+            {record.partyName || 'N/A'}
           </span>
 
           <span className="text-xs text-gray-500 text-left truncate max-w-50 -mt-1">
-            {record.partyLocationName || "N/A"}
+            {record.partyLocationName || 'N/A'}
           </span>
         </div>
       ),
     },
     {
-      title: "REG INFO",
-      key: "regInfo",
+      title: 'REG INFO',
+      key: 'regInfo',
       width: 100,
       ellipsis: true,
-      align: "left",
-      className: "text-right",
+      align: 'left',
+      className: 'text-right',
       sorter: (a, b) => {
         const valA =
-          a.cnic !== "N/A" ? a.cnic : a.ntn !== "N/A" ? a.ntn : a.gst;
+          a.cnic !== 'N/A' ? a.cnic : a.ntn !== 'N/A' ? a.ntn : a.gst;
         const valB =
-          b.cnic !== "N/A" ? b.cnic : b.ntn !== "N/A" ? b.ntn : b.gst;
-        return (valA || "").localeCompare(valB || "");
+          b.cnic !== 'N/A' ? b.cnic : b.ntn !== 'N/A' ? b.ntn : b.gst;
+        return (valA || '').localeCompare(valB || '');
       },
       render: (_, record) => {
-        let label = "";
-        let value = "";
+        let label = '';
+        let value = '';
 
-        const isInvalid = (val) =>
-          !val || val === "N/A" || /^0+[-]*0*$/.test(val);
+        const isInvalid = (val) => !val || val === 'N/A';
+        const regType = (record.partyRegistrationTypeName || '').toUpperCase();
 
-        if (!isInvalid(record.cnic)) {
-          label = "CNIC";
+        if (regType.includes('UNREGISTERED')) {
+          label = 'NTN / CNIC';
+          value = !isInvalid(record.ntn)
+            ? record.ntn
+            : !isInvalid(record.cnic)
+              ? record.cnic
+              : '0000000000000';
+        } else if (!isInvalid(record.cnic)) {
+          label = 'CNIC';
           value = record.cnic;
         } else if (!isInvalid(record.ntn)) {
-          label = "NTN";
+          label =
+            record.ntn.replace(/[-]/g, '').length === 13 ? 'NTN / CNIC' : 'NTN';
           value = record.ntn;
         } else if (!isInvalid(record.gst)) {
-          label = "STRN";
+          label = 'STRN';
           value = record.gst;
         }
 
@@ -430,8 +438,8 @@ const FBRInvoicePage = () => {
       },
     },
     {
-      title: "TOTAL TAX",
-      dataIndex: "totalTax",
+      title: 'TOTAL TAX',
+      dataIndex: 'totalTax',
       width: 110,
       sorter: (a, b) => a.totalTax - b.totalTax,
       render: (value) => (
@@ -441,10 +449,10 @@ const FBRInvoicePage = () => {
       ),
     },
     {
-      title: "TOTAL REC...",
-      dataIndex: "totalReceivable",
+      title: 'TOTAL REC...',
+      dataIndex: 'totalReceivable',
       width: 120,
-      align: "left",
+      align: 'left',
       sorter: (a, b) => a.totalReceivable - b.totalReceivable,
       render: (value) => (
         <span className="text-right block">
@@ -453,51 +461,51 @@ const FBRInvoicePage = () => {
       ),
     },
     {
-      title: "Status",
-      dataIndex: "integrationStatus",
+      title: 'Status',
+      dataIndex: 'integrationStatus',
       width: 90,
-      align: "center",
+      align: 'center',
       sorter: (a, b) => a.integrationStatus.localeCompare(b.integrationStatus),
       render: (_, record) => {
         const status = record.integrationStatus;
-        let bg = "bg-gray-200 text-gray-700";
-        let text = status || "N/A";
+        let bg = 'bg-gray-200 text-gray-700';
+        let text = status || 'N/A';
 
-        if (status === "Success") {
+        if (status === 'Success') {
           bg = isDarkMode
-            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-            : "bg-emerald-50 text-emerald-700 border border-emerald-100";
-        } else if (status === "Failed") {
+            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+            : 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+        } else if (status === 'Failed') {
           bg = isDarkMode
-            ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-            : "bg-rose-50 text-rose-700 border border-rose-100";
-        } else if (status === "Pending") {
+            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+            : 'bg-rose-50 text-rose-700 border border-rose-100';
+        } else if (status === 'Pending') {
           bg = isDarkMode
-            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-            : "bg-amber-50 text-amber-700 border border-amber-100";
+            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            : 'bg-amber-50 text-amber-700 border border-amber-100';
         }
 
         const capsule = (
           <span
             className={`${bg} px-3 py-1 rounded-full text-xs font-semibold inline-block duration-200 transition-all cursor-pointer`}
-            style={{ minWidth: "70px" }}
+            style={{minWidth: '70px'}}
           >
             {text}
           </span>
         );
 
-        if (status === "Failed") {
+        if (status === 'Failed') {
           return (
             <Tooltip
               title={record.integrationResponse}
               placement="top"
               overlayInnerStyle={{
-                maxWidth: "300px",
-                whiteSpace: "normal",
-                backgroundColor: isDarkMode ? "#1f1f1f" : "#fff",
-                color: isDarkMode ? "#f5f5f5" : "#000",
-                borderRadius: "6px",
-                padding: "8px",
+                maxWidth: '300px',
+                whiteSpace: 'normal',
+                backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
+                color: isDarkMode ? '#f5f5f5' : '#000',
+                borderRadius: '6px',
+                padding: '8px',
               }}
             >
               {capsule}
@@ -505,18 +513,18 @@ const FBRInvoicePage = () => {
           );
         }
 
-        if (status === "Success" && record.integrationRefNo) {
+        if (status === 'Success' && record.integrationRefNo) {
           return (
             <Tooltip
               title={`FBR Ref: ${record.integrationRefNo}`}
               placement="top"
               overlayInnerStyle={{
-                maxWidth: "300px",
-                whiteSpace: "normal",
-                backgroundColor: isDarkMode ? "#1f1f1f" : "#fff",
-                color: isDarkMode ? "#f5f5f5" : "#000",
-                borderRadius: "6px",
-                padding: "8px",
+                maxWidth: '300px',
+                whiteSpace: 'normal',
+                backgroundColor: isDarkMode ? '#1f1f1f' : '#fff',
+                color: isDarkMode ? '#f5f5f5' : '#000',
+                borderRadius: '6px',
+                padding: '8px',
               }}
             >
               {capsule}
@@ -528,22 +536,22 @@ const FBRInvoicePage = () => {
       },
     },
     {
-      title: "Action",
-      key: "action",
+      title: 'Action',
+      key: 'action',
       width: 130,
-      align: "center",
+      align: 'center',
       render: (_, record) => {
         const actionButtons = [];
 
-        if (record.integrationStatus === "Pending") {
+        if (record.integrationStatus === 'Pending') {
           actionButtons.push(
             postInvoiceIsLoading && postingInvoiceId === record.invoiceId ? (
               <div
                 key="proceed-loading"
                 className={`flex items-center justify-center h-8 w-8 rounded-xl border transition-colors duration-200 shadow-sm ${
                   isDarkMode
-                    ? "bg-violet-500/10 border-violet-500/20 text-violet-400"
-                    : "bg-white border-gray-300 text-violet-600"
+                    ? 'bg-violet-500/10 border-violet-500/20 text-violet-400'
+                    : 'bg-white border-gray-300 text-violet-600'
                 }`}
               >
                 <Loader className="w-4 h-4 animate-spin" />
@@ -552,32 +560,32 @@ const FBRInvoicePage = () => {
               <button
                 key="proceed"
                 onClick={() => {
-                  if (!permission(canPost, "No permission to post invoice"))
+                  if (!permission(canPost, 'No permission to post invoice'))
                     return;
                   postInvoice(record.invoiceId);
                 }}
                 className={`flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-300 ${
                   isDarkMode
-                    ? "bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/25 hover:text-violet-300 hover:border-violet-500/40"
-                    : "bg-violet-50 text-violet-600 border border-violet-100 hover:bg-violet-100 hover:border-violet-200"
+                    ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/25 hover:text-violet-300 hover:border-violet-500/40'
+                    : 'bg-violet-50 text-violet-600 border border-violet-100 hover:bg-violet-100 hover:border-violet-200'
                 } shadow-sm active:scale-90 group`}
                 title="Proceed Invoice"
               >
                 <Redo className="w-4 h-4 transition-transform group-hover:scale-110" />
               </button>
-            ),
+            )
           );
         }
 
-        if (record.integrationStatus === "Failed") {
+        if (record.integrationStatus === 'Failed') {
           actionButtons.push(
             postInvoiceIsLoading && postingInvoiceId === record.invoiceId ? (
               <div
                 key="retry-loading"
                 className={`flex items-center justify-center h-8 w-8 rounded-xl border transition-colors duration-200 shadow-sm ${
                   isDarkMode
-                    ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                    : "bg-white border-gray-300 text-rose-600"
+                    ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                    : 'bg-white border-gray-300 text-rose-600'
                 }`}
               >
                 <Loader className="w-4 h-4 animate-spin" />
@@ -586,20 +594,20 @@ const FBRInvoicePage = () => {
               <button
                 key="retry"
                 onClick={() => {
-                  if (!permission(canPost, "No permission to post invoice"))
+                  if (!permission(canPost, 'No permission to post invoice'))
                     return;
                   postInvoice(record.invoiceId);
                 }}
                 className={`flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-300 ${
                   isDarkMode
-                    ? "bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/25 hover:text-rose-300 hover:border-rose-500/40"
-                    : "bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 hover:border-rose-200"
+                    ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/25 hover:text-rose-300 hover:border-rose-500/40'
+                    : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 hover:border-rose-200'
                 } shadow-sm active:scale-90 group`}
                 title="Retry Submission"
               >
                 <AlertCircle className="w-4 h-4 transition-transform group-hover:scale-110" />
               </button>
-            ),
+            )
           );
         }
 
@@ -607,14 +615,14 @@ const FBRInvoicePage = () => {
           <button
             key="view"
             onClick={() => {
-              if (!permission(canView, "No permission to view raw data"))
+              if (!permission(canView, 'No permission to view raw data'))
                 return;
               fetchRawData(record.invoiceId);
             }}
             className={`flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-300 ${
               isDarkMode
-                ? "bg-zinc-500/10 text-zinc-400 border border-zinc-500/20 hover:bg-violet-500/20 hover:text-violet-300 hover:border-violet-500/40"
-                : "bg-zinc-50 text-zinc-500 border border-zinc-100 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-100"
+                ? 'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20 hover:bg-violet-500/20 hover:text-violet-300 hover:border-violet-500/40'
+                : 'bg-zinc-50 text-zinc-500 border border-zinc-100 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-100'
             } shadow-sm active:scale-90 group`}
             disabled={isRawDataLoading && selectedRawId === record.invoiceId}
             title="View Raw Data"
@@ -624,7 +632,7 @@ const FBRInvoicePage = () => {
             ) : (
               <FileSearch className="w-4 h-4 transition-transform group-hover:scale-110" />
             )}
-          </button>,
+          </button>
         );
 
         actionButtons.push(
@@ -633,8 +641,8 @@ const FBRInvoicePage = () => {
               key={`preview-loading-${record.invoiceId}`}
               className={`h-8 w-8 rounded-xl border transition-colors duration-200 shadow-sm flex items-center justify-center ${
                 isDarkMode
-                  ? "bg-sky-500/10 border-sky-500/20 text-sky-400"
-                  : "bg-white border-gray-300 text-sky-600"
+                  ? 'bg-sky-500/10 border-sky-500/20 text-sky-400'
+                  : 'bg-white border-gray-300 text-sky-600'
               }`}
             >
               <Loader className="w-4 h-4 animate-spin" />
@@ -642,14 +650,14 @@ const FBRInvoicePage = () => {
           ) : (
             <button
               onClick={() => {
-                if (!permission(canView, "No permission to view PDF")) return;
+                if (!permission(canView, 'No permission to view PDF')) return;
                 generateInvoicePDF(record.invoiceId);
               }}
               key="preview"
               className={`flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-300 ${
                 isDarkMode
-                  ? "bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/25 hover:text-sky-300 hover:border-sky-500/40"
-                  : "bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-100 hover:border-sky-200"
+                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/25 hover:text-sky-300 hover:border-sky-500/40'
+                  : 'bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-100 hover:border-sky-200'
               } shadow-sm active:scale-90 group`}
               title="Preview PDF"
             >
@@ -659,7 +667,7 @@ const FBRInvoicePage = () => {
                 className="w-4 h-4 transition-transform group-hover:scale-105"
               />
             </button>
-          ),
+          )
         );
         return (
           <div className="flex items-center justify-center gap-2">
@@ -674,7 +682,7 @@ const FBRInvoicePage = () => {
     <>
       <div
         className={`mb-3 flex flex-col md:flex-col lg:flex-row items-center justify-between rounded-lg sm:rounded-full sm:items-center  px-3 sm:px-3 sm:pl-5 transition-colors duration-200  ${
-          isDarkMode ? " bg-[#141025]" : "bg-gray-50"
+          isDarkMode ? ' bg-[#141025]' : 'bg-gray-50'
         }`}
       >
         <Breadcrumb />
@@ -687,8 +695,8 @@ const FBRInvoicePage = () => {
           count={totalInvoices}
           title="Total"
           color="#3B82F6"
-          isActive={statusFilter === "All"}
-          onClick={() => handleSummaryCardClick("All")}
+          isActive={statusFilter === 'All'}
+          onClick={() => handleSummaryCardClick('All')}
         />
 
         <SummaryCard
@@ -696,8 +704,8 @@ const FBRInvoicePage = () => {
           title="Pending"
           color="#F59E0B"
           count={pendingInvoices}
-          isActive={statusFilter === "Pending"}
-          onClick={() => handleSummaryCardClick("Pending")}
+          isActive={statusFilter === 'Pending'}
+          onClick={() => handleSummaryCardClick('Pending')}
         />
 
         <SummaryCard
@@ -705,8 +713,8 @@ const FBRInvoicePage = () => {
           title="Success"
           color="#059669"
           count={submitInvoices}
-          isActive={statusFilter === "Success"}
-          onClick={() => handleSummaryCardClick("Success")}
+          isActive={statusFilter === 'Success'}
+          onClick={() => handleSummaryCardClick('Success')}
         />
 
         <SummaryCard
@@ -714,8 +722,8 @@ const FBRInvoicePage = () => {
           title="Failed"
           color="#EF4444"
           count={failedInvoices}
-          isActive={statusFilter === "Failed"}
-          onClick={() => handleSummaryCardClick("Failed")}
+          isActive={statusFilter === 'Failed'}
+          onClick={() => handleSummaryCardClick('Failed')}
         />
       </div>
 
@@ -730,7 +738,7 @@ const FBRInvoicePage = () => {
 
               <div
                 className={`text-md font-medium ${
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}
               >
                 Total Records: {filteredData?.length || 0}
@@ -770,15 +778,15 @@ const FBRInvoicePage = () => {
           }
           columns={columns}
           dataSource={filteredData}
-          scroll={{ x: 1000 }}
+          scroll={{x: 1000}}
           bordered
           rowClassName={() =>
-            "hover:bg-[#1b122b]/30 !h-10 [&>td]:!py-1.5 [&>td]:!px-2"
+            'hover:bg-[#1b122b]/30 !h-10 [&>td]:!py-1.5 [&>td]:!px-2'
           }
           pagination={{
             total: filteredData?.length || 0,
             showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
+            pageSizeOptions: ['10', '20', '50', '100'],
             defaultPageSize: 10,
           }}
         />
@@ -791,7 +799,7 @@ const FBRInvoicePage = () => {
           onClick={() =>
             setResponseModal({
               open: false,
-              message: "",
+              message: '',
               isError: false,
               data: null,
             })
@@ -799,9 +807,9 @@ const FBRInvoicePage = () => {
         >
           <div
             className={`w-[90%] max-w-md p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${
-              isDarkMode ? "bg-[#1A162B] text-white" : "bg-white text-gray-800"
+              isDarkMode ? 'bg-[#1A162B] text-white' : 'bg-white text-gray-800'
             }`}
-            style={{ fontFamily: '"Outfit", sans-serif' }}
+            style={{fontFamily: '"Outfit", sans-serif'}}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
@@ -838,7 +846,7 @@ const FBRInvoicePage = () => {
               </div>
 
               <h3 className="text-lg font-semibold mb-2">
-                {responseModal.isError ? "Error" : "Response"}
+                {responseModal.isError ? 'Error' : 'Response'}
               </h3>
 
               <p className="text-sm opacity-80 mb-4">{responseModal.message}</p>
@@ -849,19 +857,19 @@ const FBRInvoicePage = () => {
                     onClick={() => setShowDetails(!showDetails)}
                     className={`text-xs font-semibold py-1 px-3 rounded-md transition-colors ${
                       isDarkMode
-                        ? "bg-white/10 text-purple-300 hover:bg-white/20"
-                        : "bg-purple-100 text-purple-600 hover:bg-purple-200"
+                        ? 'bg-white/10 text-purple-300 hover:bg-white/20'
+                        : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
                     }`}
                   >
-                    {showDetails ? "Hide Details" : "Show Details"}
+                    {showDetails ? 'Hide Details' : 'Show Details'}
                   </button>
 
                   {showDetails && (
                     <div
                       className={`mt-4 text-left p-4 rounded-xl text-[11px] font-mono overflow-y-auto max-h-60 border ${
                         isDarkMode
-                          ? "bg-black/40 border-white/10 text-gray-300"
-                          : "bg-gray-50 border-gray-100 text-gray-700"
+                          ? 'bg-black/40 border-white/10 text-gray-300'
+                          : 'bg-gray-50 border-gray-100 text-gray-700'
                       }`}
                     >
                       <pre className="whitespace-pre-wrap">
@@ -882,14 +890,14 @@ const FBRInvoicePage = () => {
                                       <div className="flex justify-between font-bold text-blue-300 mb-1">
                                         <span>Item SR No: {item.itemSNo}</span>
                                         <span>
-                                          Code: {item.errorCode || "N/A"}
+                                          Code: {item.errorCode || 'N/A'}
                                         </span>
                                       </div>
                                       <div className="opacity-80 italic leading-relaxed">
                                         {item.error}
                                       </div>
                                     </div>
-                                  ),
+                                  )
                                 )}
                               </div>
                             )}
@@ -907,7 +915,7 @@ const FBRInvoicePage = () => {
                 onClick={() =>
                   setResponseModal({
                     open: false,
-                    message: "",
+                    message: '',
                     isError: false,
                     data: null,
                   })
@@ -926,17 +934,17 @@ const FBRInvoicePage = () => {
         <div
           className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-md sm:p-4 p-0"
           onClick={() => {
-            setRawDataModal({ open: false });
+            setRawDataModal({open: false});
             setSelectedRawId(null);
           }}
         >
           <div
             className={`w-full max-w-5xl sm:max-h-[90vh] h-full sm:h-auto flex flex-col sm:rounded-2xl rounded-none shadow-2xl overflow-hidden transition-all transform scale-100 ${
               isDarkMode
-                ? "bg-[#141025] text-white border border-[#2a2040]"
-                : "bg-white text-gray-800"
+                ? 'bg-[#141025] text-white border border-[#2a2040]'
+                : 'bg-white text-gray-800'
             }`}
-            style={{ fontFamily: '"Outfit", sans-serif' }}
+            style={{fontFamily: '"Outfit", sans-serif'}}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -956,13 +964,13 @@ const FBRInvoicePage = () => {
 
               <button
                 onClick={() => {
-                  setRawDataModal({ open: false });
+                  setRawDataModal({open: false});
                   setSelectedRawId(null);
                 }}
                 className={`p-2 rounded-xl transition-colors ${
                   isDarkMode
-                    ? "hover:bg-white/10 text-gray-400"
-                    : "hover:bg-gray-100 text-gray-500"
+                    ? 'hover:bg-white/10 text-gray-400'
+                    : 'hover:bg-gray-100 text-gray-500'
                 }`}
               >
                 <X size={20} />
@@ -984,28 +992,28 @@ const FBRInvoicePage = () => {
                   <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                     {[
                       {
-                        label: "Invoice Type",
+                        label: 'Invoice Type',
                         value: invoiceRawData.invoiceType,
                       },
                       {
-                        label: "Invoice Date",
+                        label: 'Invoice Date',
                         value: invoiceRawData.invoiceDate,
                       },
                       {
-                        label: "Scenario ID",
+                        label: 'Scenario ID',
                         value: invoiceRawData.scenarioId,
                       },
                       {
-                        label: "Invoice Ref",
-                        value: invoiceRawData.invoiceRefNo || "N/A",
+                        label: 'Invoice Ref',
+                        value: invoiceRawData.invoiceRefNo || 'N/A',
                       },
                     ].map((item, i) => (
                       <div
                         key={i}
                         className={`px-4 py-2 rounded-xl border ${
                           isDarkMode
-                            ? "bg-white/5 border-white/5"
-                            : "bg-gray-50 border-gray-100"
+                            ? 'bg-white/5 border-white/5'
+                            : 'bg-gray-50 border-gray-100'
                         }`}
                       >
                         <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider block">
@@ -1024,8 +1032,8 @@ const FBRInvoicePage = () => {
                     <div
                       className={`rounded-xl border overflow-hidden ${
                         isDarkMode
-                          ? "border-white/5 bg-white/5"
-                          : "border-gray-100 bg-white shadow-sm"
+                          ? 'border-white/5 bg-white/5'
+                          : 'border-gray-100 bg-white shadow-sm'
                       }`}
                     >
                       <div className="px-5 py-2">
@@ -1075,8 +1083,8 @@ const FBRInvoicePage = () => {
                     <div
                       className={`rounded-xl border overflow-hidden ${
                         isDarkMode
-                          ? "border-white/5 bg-white/5"
-                          : "border-gray-100 bg-white shadow-sm"
+                          ? 'border-white/5 bg-white/5'
+                          : 'border-gray-100 bg-white shadow-sm'
                       }`}
                     >
                       <div className="px-5 py-2">
@@ -1145,23 +1153,23 @@ const FBRInvoicePage = () => {
                     </h4>
                     <div
                       className={`rounded-xl border overflow-hidden ${
-                        isDarkMode ? "border-white/10" : "border-gray-200"
+                        isDarkMode ? 'border-white/10' : 'border-gray-200'
                       }`}
                     >
                       <Table
                         dataSource={invoiceRawData.items}
                         pagination={false}
                         size="small"
-                        scroll={{ x: true }}
+                        scroll={{x: true}}
                         bordered
                         rowKey={(record) =>
                           `${record.itemSNo}-${record.hsCode}-${record.productDescription}`
                         }
                         columns={[
                           {
-                            title: "#",
+                            title: '#',
                             width: 50,
-                            align: "center",
+                            align: 'center',
                             render: (_, __, idx) => (
                               <span className="text-[10px] font-bold opacity-40">
                                 {idx + 1}
@@ -1169,9 +1177,9 @@ const FBRInvoicePage = () => {
                             ),
                           },
                           {
-                            title: "Sale Type",
-                            dataIndex: "saleType",
-                            key: "saleType",
+                            title: 'Sale Type',
+                            dataIndex: 'saleType',
+                            key: 'saleType',
                             width: 160,
                             render: (text) => (
                               <Tooltip
@@ -1181,21 +1189,21 @@ const FBRInvoicePage = () => {
                                 mouseLeaveDelay={0}
                               >
                                 <div className="truncate max-w-35 font-medium opacity-80 cursor-help">
-                                  {text || "N/A"}
+                                  {text || 'N/A'}
                                 </div>
                               </Tooltip>
                             ),
                           },
                           {
-                            title: "HS Code",
-                            dataIndex: "hsCode",
-                            key: "hsCode",
+                            title: 'HS Code',
+                            dataIndex: 'hsCode',
+                            key: 'hsCode',
                             width: 100,
                           },
                           {
-                            title: "Product Description",
-                            dataIndex: "productDescription",
-                            key: "desc",
+                            title: 'Product Description',
+                            dataIndex: 'productDescription',
+                            key: 'desc',
                             width: 250,
                             render: (text) => (
                               <Tooltip
@@ -1205,116 +1213,116 @@ const FBRInvoicePage = () => {
                                 mouseLeaveDelay={0}
                               >
                                 <div className="truncate max-w-60 font-medium opacity-80 cursor-help">
-                                  {text || "N/A"}
+                                  {text || 'N/A'}
                                 </div>
                               </Tooltip>
                             ),
                           },
                           {
-                            title: "UOM",
-                            dataIndex: "uoM",
-                            key: "uoM",
+                            title: 'UOM',
+                            dataIndex: 'uoM',
+                            key: 'uoM',
                             width: 120,
                           },
                           {
-                            title: "Qty",
-                            dataIndex: "quantity",
-                            key: "qty",
-                            align: "right",
+                            title: 'Qty',
+                            dataIndex: 'quantity',
+                            key: 'qty',
+                            align: 'right',
                             width: 70,
                           },
                           {
-                            title: "Rate",
-                            dataIndex: "rate",
-                            key: "rate",
-                            align: "right",
+                            title: 'Rate',
+                            dataIndex: 'rate',
+                            key: 'rate',
+                            align: 'right',
                             width: 80,
                           },
                           {
-                            title: "Total Val.",
-                            dataIndex: "totalValues",
-                            key: "totalValues",
-                            align: "right",
+                            title: 'Total Val.',
+                            dataIndex: 'totalValues',
+                            key: 'totalValues',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "Excl. Tax",
-                            dataIndex: "valueSalesExcludingST",
-                            key: "excl",
-                            align: "right",
+                            title: 'Excl. Tax',
+                            dataIndex: 'valueSalesExcludingST',
+                            key: 'excl',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "Fixed/Retail",
-                            dataIndex: "fixedNotifiedValueOrRetailPrice",
-                            key: "fixed",
-                            align: "right",
+                            title: 'Fixed/Retail',
+                            dataIndex: 'fixedNotifiedValueOrRetailPrice',
+                            key: 'fixed',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "ST Appl.",
-                            dataIndex: "salesTaxApplicable",
-                            key: "tax",
-                            align: "right",
+                            title: 'ST Appl.',
+                            dataIndex: 'salesTaxApplicable',
+                            key: 'tax',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "ST Withheld",
-                            dataIndex: "salesTaxWithheldAtSource",
-                            key: "stWithheld",
-                            align: "right",
+                            title: 'ST Withheld',
+                            dataIndex: 'salesTaxWithheldAtSource',
+                            key: 'stWithheld',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "Extra Tax",
-                            dataIndex: "extraTax",
-                            key: "extraTax",
-                            align: "right",
+                            title: 'Extra Tax',
+                            dataIndex: 'extraTax',
+                            key: 'extraTax',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "Further Tax",
-                            dataIndex: "furtherTax",
-                            key: "furtherTax",
-                            align: "right",
+                            title: 'Further Tax',
+                            dataIndex: 'furtherTax',
+                            key: 'furtherTax',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "FED Payable",
-                            dataIndex: "fedPayable",
-                            key: "fed",
-                            align: "right",
+                            title: 'FED Payable',
+                            dataIndex: 'fedPayable',
+                            key: 'fed',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "Discount",
-                            dataIndex: "discount",
-                            key: "discount",
-                            align: "right",
+                            title: 'Discount',
+                            dataIndex: 'discount',
+                            key: 'discount',
+                            align: 'right',
                             width: 100,
                             render: (v) => Number(v || 0).toLocaleString(),
                           },
                           {
-                            title: "SRO Sch.",
-                            dataIndex: "sroScheduleNo",
-                            key: "sroSchedule",
+                            title: 'SRO Sch.',
+                            dataIndex: 'sroScheduleNo',
+                            key: 'sroSchedule',
                             width: 100,
-                            align: "center",
+                            align: 'center',
                           },
                           {
-                            title: "SRO Ser.",
-                            dataIndex: "sroItemSerialNo",
-                            key: "sroSerial",
+                            title: 'SRO Ser.',
+                            dataIndex: 'sroItemSerialNo',
+                            key: 'sroSerial',
                             width: 100,
-                            align: "center",
+                            align: 'center',
                           },
                         ]}
                       />
@@ -1326,8 +1334,8 @@ const FBRInvoicePage = () => {
                     <div
                       className={`rounded-2xl p-6 border ${
                         isDarkMode
-                          ? "bg-linear-to-br from-[#1c1830] to-[#141025] border-white/5"
-                          : "bg-linear-to-br from-gray-50 to-white border-gray-100 shadow-sm"
+                          ? 'bg-linear-to-br from-[#1c1830] to-[#141025] border-white/5'
+                          : 'bg-linear-to-br from-gray-50 to-white border-gray-100 shadow-sm'
                       }`}
                     >
                       <div className="flex items-center gap-3 mb-6">
@@ -1348,92 +1356,92 @@ const FBRInvoicePage = () => {
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-y-8 gap-x-4">
                         {[
                           {
-                            label: "Total Quantity",
+                            label: 'Total Quantity',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) => sum + Number(item.quantity || 0),
-                              0,
+                              0
                             ),
-                            color: "text-blue-500",
+                            color: 'text-blue-500',
                           },
                           {
-                            label: "Total Values",
+                            label: 'Total Values',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) =>
                                 sum + Number(item.totalValues || 0),
-                              0,
+                              0
                             ),
                           },
                           {
-                            label: "Value Excl. ST",
+                            label: 'Value Excl. ST',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) =>
                                 sum + Number(item.valueSalesExcludingST || 0),
-                              0,
+                              0
                             ),
                           },
                           {
-                            label: "ST Applicable",
+                            label: 'ST Applicable',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) =>
                                 sum + Number(item.salesTaxApplicable || 0),
-                              0,
+                              0
                             ),
-                            color: "text-emerald-500",
+                            color: 'text-emerald-500',
                           },
                           {
-                            label: "ST Withheld",
+                            label: 'ST Withheld',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) =>
                                 sum +
                                 Number(item.salesTaxWithheldAtSource || 0),
-                              0,
+                              0
                             ),
                           },
                           {
-                            label: "Extra Tax",
+                            label: 'Extra Tax',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) => sum + Number(item.extraTax || 0),
-                              0,
+                              0
                             ),
                           },
                           {
-                            label: "Further Tax",
+                            label: 'Further Tax',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) => sum + Number(item.furtherTax || 0),
-                              0,
+                              0
                             ),
                           },
                           {
-                            label: "FED Payable",
+                            label: 'FED Payable',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) => sum + Number(item.fedPayable || 0),
-                              0,
+                              0
                             ),
                           },
                           {
-                            label: "Discount",
+                            label: 'Discount',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) => sum + Number(item.discount || 0),
-                              0,
+                              0
                             ),
-                            color: "text-rose-500",
+                            color: 'text-rose-500',
                           },
                           {
-                            label: "Grand Total",
+                            label: 'Grand Total',
                             value: invoiceRawData.items?.reduce(
                               (sum, item) =>
                                 sum +
                                 Number(
                                   item.valueSalesExcludingST ||
                                     item.totalValues ||
-                                    0,
+                                    0
                                 ) +
                                 Number(item.salesTaxApplicable || 0) +
                                 Number(item.furtherTax || 0) +
                                 Number(item.extraTax || 0) +
                                 Number(item.fedPayable || 0) -
                                 Number(item.discount || 0),
-                              0,
+                              0
                             ),
                             isGrand: true,
                           },
@@ -1442,8 +1450,8 @@ const FBRInvoicePage = () => {
                             key={i}
                             className={`flex flex-col ${
                               stat.isGrand
-                                ? "lg:col-span-1 rounded-xl bg-purple-500/10 p-3 -m-3 border border-purple-500/20"
-                                : ""
+                                ? 'lg:col-span-1 rounded-xl bg-purple-500/10 p-3 -m-3 border border-purple-500/20'
+                                : ''
                             }`}
                           >
                             <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1">
@@ -1453,10 +1461,10 @@ const FBRInvoicePage = () => {
                               className={`text-sm font-black tracking-tight ${
                                 stat.color ||
                                 (stat.isGrand
-                                  ? "text-purple-500 text-lg"
+                                  ? 'text-purple-500 text-lg'
                                   : isDarkMode
-                                    ? "text-white"
-                                    : "text-gray-900")
+                                    ? 'text-white'
+                                    : 'text-gray-900')
                               }`}
                             >
                               {stat.isGrand && (
@@ -1469,7 +1477,7 @@ const FBRInvoicePage = () => {
                                 {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
-                                },
+                                }
                               )}
                             </span>
                           </div>

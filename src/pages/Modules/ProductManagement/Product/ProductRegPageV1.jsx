@@ -1,81 +1,85 @@
-import { Table } from "antd";
-import toast from "react-hot-toast";
-import { useEffect, useState } from "react";
-import { motion as Motion, AnimatePresence } from "framer-motion";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2, Redo, Edit, Loader, Search, AlertCircle } from "lucide-react";
+import {Table} from 'antd';
+import toast from 'react-hot-toast';
+import {useEffect, useState} from 'react';
+import {motion as Motion, AnimatePresence} from 'framer-motion';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {Trash2, Redo, Edit, Loader, Search, AlertCircle} from 'lucide-react';
 
-import { useTheme } from "../../../../ThemeProvider";
-import { handleApiResponse } from "../../../../utils/handleApiResponse";
+import {useTheme} from '../../../../ThemeProvider';
+import {handleApiResponse} from '../../../../utils/handleApiResponse';
 
-import { usePagePermissions } from "../../../../permissions";
+import {usePagePermissions} from '../../../../permissions';
 
-import { useGetAuth } from "../../../../hooks/useGetAuth";
-import { useGetUnits } from "../../../../hooks/useGetUnits";
-import { useCloseOnEscape } from "../../../../hooks/useCloseOnEscape";
-import { useGetProductTypes } from "../../../../hooks/useGetProductTypes";
-import { useGetProductCategories } from "../../../../hooks/useGetProductCategories";
-import { useGetProductSubCategories } from "../../../../hooks/useGetProductSubCategories";
+import {useGetAuth} from '../../../../hooks/useGetAuth';
+import {useGetUnits} from '../../../../hooks/useGetUnits';
+import {useCloseOnEscape} from '../../../../hooks/useCloseOnEscape';
+import {useGetProductTypes} from '../../../../hooks/useGetProductTypes';
+import {useGetProductCategories} from '../../../../hooks/useGetProductCategories';
+import {useGetProductSubCategories} from '../../../../hooks/useGetProductSubCategories';
 
-import SearchBar from "../../../../components/SearchBar";
-import CustomInput from "../../../../components/CustomInput";
-import SuccessModal from "../../../../components/SuccessModal";
-import Breadcrumb from "../../../../components/common/Breadcrumb";
-import SelectDropDown from "../../../../components/SelectDropDown";
-import TableErrorState from "../../../../components/TableErrorState";
-import CustomButton from "../../../../components/common/CustomButton";
-import CustomDeleteModal from "../../../../components/CustomDeleteModal";
-import ModalActionButtons from "../../../../components/ModalActionButtons";
-import ActionButtons from "../../../../components/ActionButtons";
+import SearchBar from '../../../../components/SearchBar';
+import CustomInput from '../../../../components/CustomInput';
+import SuccessModal from '../../../../components/SuccessModal';
+import Breadcrumb from '../../../../components/common/Breadcrumb';
+import SelectDropDown from '../../../../components/SelectDropDown';
+import TableErrorState from '../../../../components/TableErrorState';
+import CustomButton from '../../../../components/common/CustomButton';
+import CustomDeleteModal from '../../../../components/CustomDeleteModal';
+import ModalActionButtons from '../../../../components/ModalActionButtons';
+import ActionButtons from '../../../../components/ActionButtons';
+import ProductSettingsModal from './ProductSettingsModal';
 // Imports End----------------
 
 const ProductRegPageV1 = () => {
   const queryClient = useQueryClient();
 
-  const { loginAccessToken } = useGetAuth();
-  const { isDarkMode } = useTheme();
+  const {loginAccessToken} = useGetAuth();
+  const {isDarkMode} = useTheme();
 
-  const { canAdd, canEdit, canDelete, permission } = usePagePermissions();
+  const {canAdd, canEdit, canDelete, permission} = usePagePermissions();
 
   const [addModal, setAddModal] = useState(false);
-  const [confirmModal, setConfirmModal] = useState({ open: false, id: null });
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [selectedProductForSetting, setSelectedProductForSetting] =
+    useState(null);
+  const [confirmModal, setConfirmModal] = useState({open: false, id: null});
   const [deletingId, setDeletingId] = useState(null);
-  const [globalSearch, setGlobalSearch] = useState("");
+  const [globalSearch, setGlobalSearch] = useState('');
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [bulkDeleteModal, setBulkDeleteModal] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [searchedHsCode, setSearchedHsCode] = useState("");
+  const [searchedHsCode, setSearchedHsCode] = useState('');
 
   const [newProduct, setNewProduct] = useState({
-    productId: "",
-    productName: "",
-    productCode: "",
-    productTypeId: "",
-    productTypeName: "",
-    productCategoryId: "",
-    productCategoryName: "",
-    productSubCategoryId: "",
-    productSubCategoryName: "",
+    productId: '',
+    productName: '',
+    productCode: '',
+    productTypeId: '',
+    productTypeName: '',
+    productCategoryId: '',
+    productCategoryName: '',
+    productSubCategoryId: '',
+    productSubCategoryName: '',
     productStyleId: null,
-    productRefNo: "",
-    orderUnitId: "",
+    productRefNo: '',
+    orderUnitId: '',
     seqNo: 0,
   });
 
   //  Fetch Data
-  const { data: units = [] } = useGetUnits({
+  const {data: units = []} = useGetUnits({
     enabled: !!addModal,
-    queryKey: ["units", loginAccessToken, addModal],
+    queryKey: ['units', loginAccessToken, addModal],
   });
 
-  const { productTypes = [] } = useGetProductTypes({
+  const {productTypes = []} = useGetProductTypes({
     enabled: !!addModal,
   });
-  const { data: productCategories = [] } = useGetProductCategories({
+  const {data: productCategories = []} = useGetProductCategories({
     enabled: !!addModal,
   });
-  const { data: productSubCategories = [] } = useGetProductSubCategories({
+  const {data: productSubCategories = []} = useGetProductSubCategories({
     enabled: !!addModal,
   });
 
@@ -85,14 +89,14 @@ const ProductRegPageV1 = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ['products'],
     queryFn: async () => {
-      const res = await fetch("/api/DI/Product/GetList", {
-        method: "POST",
+      const res = await fetch('/api/DI/Product/GetList', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${loginAccessToken}`,
-          accept: "text/plain",
+          accept: 'text/plain',
         },
         body: JSON.stringify({}),
       });
@@ -115,25 +119,25 @@ const ProductRegPageV1 = () => {
         ...item,
         key: item.productId || i,
         sr: i + 1,
-        orderUnitName: item.unitShortName || "N/A",
+        orderUnitName: item.unitShortName || 'N/A',
       }))
     : [];
 
   // Fetch single product by ID
-  const { data: productById, isLoading: productIdisLoading } = useQuery({
-    queryKey: ["productById", newProduct.productId],
+  const {data: productById, isLoading: productIdisLoading} = useQuery({
+    queryKey: ['productById', newProduct.productId],
     queryFn: async () => {
       const res = await fetch(
         `/api/DI/Product/GetById?Id=${newProduct.productId}`,
         {
           headers: {
-            accept: "text/plain",
+            accept: 'text/plain',
             Authorization: `Bearer ${loginAccessToken}`,
           },
-        },
+        }
       );
 
-      return handleApiResponse(res, "Failed to fetch product details");
+      return handleApiResponse(res, 'Failed to fetch product details');
     },
     enabled: !!newProduct.productId,
     staleTime: 0,
@@ -147,17 +151,17 @@ const ProductRegPageV1 = () => {
 
       setNewProduct((prev) => ({
         ...prev,
-        productName: p.productName || "",
-        productCode: p.productCode || "",
-        productRefNo: p.productRefNo || "",
-        productTypeId: Number(p.productTypeId) || "",
-        productCategoryId: Number(p.productCategoryId) || "",
-        productSubCategoryId: Number(p.productSubCategoryId) || "",
-        productTypeName: p.productTypeName || "",
-        productCategoryName: p.productCategoryName || "",
-        productSubCategoryName: p.productSubCategoryName || "",
+        productName: p.productName || '',
+        productCode: p.productCode || '',
+        productRefNo: p.productRefNo || '',
+        productTypeId: Number(p.productTypeId) || '',
+        productCategoryId: Number(p.productCategoryId) || '',
+        productSubCategoryId: Number(p.productSubCategoryId) || '',
+        productTypeName: p.productTypeName || '',
+        productCategoryName: p.productCategoryName || '',
+        productSubCategoryName: p.productSubCategoryName || '',
         productStyleId: p.productStyleId || null,
-        orderUnitId: p.orderUnitId || "",
+        orderUnitId: p.orderUnitId || '',
       }));
 
       setAddModal(true);
@@ -165,9 +169,9 @@ const ProductRegPageV1 = () => {
   }, [productById]);
 
   // Fetch Auto Code
-  const { data: autoCodeResponse, isLoading: autoCodeIsLoading } = useQuery({
+  const {data: autoCodeResponse, isLoading: autoCodeIsLoading} = useQuery({
     queryKey: [
-      "productAutoCode",
+      'productAutoCode',
       newProduct.productSubCategoryId,
       loginAccessToken,
     ],
@@ -176,12 +180,12 @@ const ProductRegPageV1 = () => {
         `/api/DI/Product/GetAutoProductCode?ProductSubCategoryId=${newProduct.productSubCategoryId}`,
         {
           headers: {
-            accept: "text/plain",
+            accept: 'text/plain',
             Authorization: `Bearer ${loginAccessToken}`,
           },
-        },
+        }
       );
-      const result = await handleApiResponse(res, "Failed to fetch auto code");
+      const result = await handleApiResponse(res, 'Failed to fetch auto code');
       return result.data;
     },
     enabled:
@@ -198,21 +202,21 @@ const ProductRegPageV1 = () => {
 
   useEffect(() => {
     if (autoCodeResponse) {
-      setNewProduct((prev) => ({ ...prev, productCode: autoCodeResponse }));
+      setNewProduct((prev) => ({...prev, productCode: autoCodeResponse}));
     }
   }, [autoCodeResponse]);
 
   // Fetch HS Codes
-  const { data: hsCodesList = [] } = useQuery({
-    queryKey: ["hsCodesList"],
+  const {data: hsCodesList = []} = useQuery({
+    queryKey: ['hsCodesList'],
     queryFn: async () => {
-      const res = await fetch("/api/DI/FBRData/GetItemDescCodes", {
+      const res = await fetch('/api/DI/FBRData/GetItemDescCodes', {
         headers: {
-          accept: "text/plain",
+          accept: 'text/plain',
           Authorization: `Bearer ${loginAccessToken}`,
         },
       });
-      const result = await handleApiResponse(res, "Failed to fetch HS Codes");
+      const result = await handleApiResponse(res, 'Failed to fetch HS Codes');
       return result.data || [];
     },
     enabled: !!loginAccessToken && addModal,
@@ -221,31 +225,31 @@ const ProductRegPageV1 = () => {
   });
 
   const matchedHsCode = hsCodesList.find(
-    (item) => item.hS_CODE === searchedHsCode,
+    (item) => item.hS_CODE === searchedHsCode
   );
 
   //  Save / Update Products Mutation
-  const { mutate: saveProduct, isPending } = useMutation({
+  const {mutate: saveProduct, isPending} = useMutation({
     mutationFn: async (data) => {
-      const res = await fetch("/api/DI/Product/Save", {
-        method: "POST",
+      const res = await fetch('/api/DI/Product/Save', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${loginAccessToken}`,
         },
         body: JSON.stringify(data),
       });
 
-      return handleApiResponse(res, "Failed to save product");
+      return handleApiResponse(res, 'Failed to save product');
     },
 
     onSuccess: (result) => {
-      toast.success(result?.message || "Product saved successfully");
-      queryClient.invalidateQueries(["products"]);
+      toast.success(result?.message || 'Product saved successfully');
+      queryClient.invalidateQueries(['products']);
       handleCloseModal();
     },
 
-    onError: (err) => toast.error(err.message || "Error saving record"),
+    onError: (err) => toast.error(err.message || 'Error saving record'),
     retry: false,
   });
 
@@ -270,7 +274,7 @@ const ProductRegPageV1 = () => {
       !productRefNo ||
       !orderUnitId
     ) {
-      toast.error("Please fill all required fields");
+      toast.error('Please fill all required fields');
       return;
     }
 
@@ -288,20 +292,20 @@ const ProductRegPageV1 = () => {
   };
 
   //  Delete Product Mutation
-  const { mutate: deleteProduct } = useMutation({
+  const {mutate: deleteProduct} = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`/api/DI/Product/DeleteById?id=${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${loginAccessToken}` },
+        method: 'DELETE',
+        headers: {Authorization: `Bearer ${loginAccessToken}`},
       });
 
-      await handleApiResponse(res, "Failed to delete product");
+      await handleApiResponse(res, 'Failed to delete product');
       return id;
     },
 
     onSuccess: (deletedId) => {
       setSuccessModalOpen(true);
-      queryClient.setQueryData(["products"], (oldData) => {
+      queryClient.setQueryData(['products'], (oldData) => {
         if (!oldData) return [];
         return oldData.filter((product) => product.productId !== deletedId);
       });
@@ -318,28 +322,28 @@ const ProductRegPageV1 = () => {
         productTypeId: 0,
         productCategoryId: 0,
         productSubCategoryId: 0,
-        productName: "",
-        productCategoryName: "",
-        productSubCategoryName: "",
-        productCode: "",
-        productRefNo: "",
+        productName: '',
+        productCategoryName: '',
+        productSubCategoryName: '',
+        productCode: '',
+        productRefNo: '',
         seqNo: 0,
         rowVersionLong: 0,
         ProductClientAreaRequests: [],
         DeletedProductClientAreaRequests: [],
       }));
 
-      const res = await fetch("/api/DI/Product/DeleteAll", {
-        method: "POST",
+      const res = await fetch('/api/DI/Product/DeleteAll', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${loginAccessToken}`,
-          Accept: "text/plain",
+          Accept: 'text/plain',
         },
         body: JSON.stringify(payload),
       });
 
-      await handleApiResponse(res, "Failed to delete products");
+      await handleApiResponse(res, 'Failed to delete products');
       return selectedIds;
     },
 
@@ -347,10 +351,10 @@ const ProductRegPageV1 = () => {
 
     onSuccess: (deletedIds) => {
       setBulkDeleteModal(false);
-      queryClient.setQueryData(["products"], (oldData) => {
+      queryClient.setQueryData(['products'], (oldData) => {
         if (!oldData) return [];
         return oldData.filter(
-          (product) => !deletedIds.includes(product.productId),
+          (product) => !deletedIds.includes(product.productId)
         );
       });
 
@@ -363,7 +367,7 @@ const ProductRegPageV1 = () => {
   });
 
   const handleConfirmBulkDelete = () => {
-    if (!permission(canDelete, "No permission to delete products")) {
+    if (!permission(canDelete, 'No permission to delete products')) {
       setBulkDeleteModal(false);
       return;
     }
@@ -371,7 +375,7 @@ const ProductRegPageV1 = () => {
   };
 
   /** Handlers */
-  const handleDeleteClick = (id) => setConfirmModal({ open: true, id });
+  const handleDeleteClick = (id) => setConfirmModal({open: true, id});
 
   const handleConfirmDelete = () => {
     if (!confirmModal.id) return;
@@ -379,29 +383,29 @@ const ProductRegPageV1 = () => {
     deleteProduct(confirmModal.id, {
       onSettled: () => setDeletingId(null),
     });
-    setConfirmModal({ open: false, id: null });
+    setConfirmModal({open: false, id: null});
   };
 
-  const handleCancelDelete = () => setConfirmModal({ open: false, id: null });
+  const handleCancelDelete = () => setConfirmModal({open: false, id: null});
 
   const handleCloseModal = () => {
     setAddModal(false);
     setNewProduct({
-      productId: "",
-      productCode: "",
-      productRefNo: "",
-      productName: "",
-      productTypeId: "",
-      productTypeName: "",
-      productCategoryId: "",
-      productCategoryName: "",
-      productSubCategoryId: "",
-      productSubCategoryName: "",
+      productId: '',
+      productCode: '',
+      productRefNo: '',
+      productName: '',
+      productTypeId: '',
+      productTypeName: '',
+      productCategoryId: '',
+      productCategoryName: '',
+      productSubCategoryId: '',
+      productSubCategoryName: '',
       productStyleId: null,
-      orderUnitId: "",
+      orderUnitId: '',
       seqNo: 0,
     });
-    setSearchedHsCode("");
+    setSearchedHsCode('');
   };
 
   useCloseOnEscape(addModal, handleCloseModal);
@@ -409,12 +413,12 @@ const ProductRegPageV1 = () => {
   // Disable scroll when modal is open
   useEffect(() => {
     if (addModal) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     }
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     };
   }, [addModal]);
 
@@ -422,75 +426,75 @@ const ProductRegPageV1 = () => {
     const search = globalSearch.toLowerCase();
     return (
       item.sr?.toString().includes(search) ||
-      (item.productName || "").toLowerCase().includes(search) ||
-      (item.productCategoryName || "").toLowerCase().includes(search) ||
-      (item.productSubCategoryName || "").toLowerCase().includes(search) ||
-      (item.productCode || "").toLowerCase().includes(search) ||
-      (item.productRefNo || "").toLowerCase().includes(search)
+      (item.productName || '').toLowerCase().includes(search) ||
+      (item.productCategoryName || '').toLowerCase().includes(search) ||
+      (item.productSubCategoryName || '').toLowerCase().includes(search) ||
+      (item.productCode || '').toLowerCase().includes(search) ||
+      (item.productRefNo || '').toLowerCase().includes(search)
     );
   });
 
   //  Table Columns
   const columns = [
     {
-      title: "Sr.",
-      dataIndex: "sr",
+      title: 'Sr.',
+      dataIndex: 'sr',
       width: 70,
       sorter: (a, b) => a.sr - b.sr,
-      className: "text-center",
+      className: 'text-center',
     },
     {
-      title: "Code",
-      dataIndex: "productCode",
+      title: 'Code',
+      dataIndex: 'productCode',
       sorter: (a, b) => a.productCode.localeCompare(b.productCode),
       width: 125,
       ellipsis: true,
-      className: "text-center",
+      className: 'text-center',
     },
     {
-      title: "HS Code",
-      dataIndex: "productRefNo",
+      title: 'HS Code',
+      dataIndex: 'productRefNo',
       sorter: (a, b) => a.productRefNo.localeCompare(b.productRefNo),
       width: 90,
       ellipsis: true,
     },
     {
-      title: "Product Name",
-      dataIndex: "productName",
+      title: 'Product Name',
+      dataIndex: 'productName',
       sorter: (a, b) => a.productName.localeCompare(b.productName),
       ellipsis: true,
       width: 280,
       render: (text) => <span title={text}>{text}</span>,
     },
     {
-      title: "Unit",
-      dataIndex: "orderUnitName",
+      title: 'Unit',
+      dataIndex: 'orderUnitName',
       sorter: (a, b) => a.orderUnitName.localeCompare(b.orderUnitName),
       ellipsis: true,
       width: 80,
     },
     {
-      title: "Category",
-      dataIndex: "productCategoryName",
+      title: 'Category',
+      dataIndex: 'productCategoryName',
       width: 200,
       sorter: (a, b) =>
         a.productCategoryName.localeCompare(b.productCategoryName),
       render: (_, record) => (
         <div className="flex flex-col">
           <span className="font-medium text-left truncate max-w-50">
-            {record.productCategoryName || "N/A"}
+            {record.productCategoryName || 'N/A'}
           </span>
           <span className="text-xs text-gray-500 text-left truncate max-w-50 -mt-1">
-            {record.productSubCategoryName || "N/A"}
+            {record.productSubCategoryName || 'N/A'}
           </span>
         </div>
       ),
     },
     {
-      title: "Action",
-      key: "action",
-      width: 110,
-      align: "center",
+      title: 'Action',
+      key: 'action',
+      width: 140,
+      align: 'center',
       render: (_, record) => (
         <ActionButtons
           record={record}
@@ -499,15 +503,19 @@ const ProductRegPageV1 = () => {
             productIdisLoading && newProduct.productId === record.productId
           }
           isDeleteLoading={deletingId === record.key}
+          onSettings={(rec) => {
+            setSelectedProductForSetting(rec);
+            setSettingsModalOpen(true);
+          }}
           onEdit={(rec) => {
-            if (!permission(canEdit, "No permission to edit product")) return;
+            if (!permission(canEdit, 'No permission to edit product')) return;
             setNewProduct((prev) => ({
               ...prev,
               productId: rec.productId,
             }));
           }}
           onDelete={(rec) => {
-            if (!permission(canDelete, "No permission to delete product"))
+            if (!permission(canDelete, 'No permission to delete product'))
               return;
             handleDeleteClick(rec.key);
           }}
@@ -518,14 +526,14 @@ const ProductRegPageV1 = () => {
 
   // Filter Sub Categories based on selected Category
   const filteredSubCategories = productSubCategories?.filter(
-    (sub) => sub.productCategoryId === Number(newProduct.productCategoryId),
+    (sub) => sub.productCategoryId === Number(newProduct.productCategoryId)
   );
 
   return (
     <>
       <div
         className={`mb-3 flex flex-col md:flex-col lg:flex-row items-center justify-between rounded-lg sm:rounded-full sm:items-center px-3 sm:px-3 sm:pl-5 pb-5 lg:pb-0 transition-colors duration-200  ${
-          isDarkMode ? " bg-[#141025]" : "bg-gray-100"
+          isDarkMode ? ' bg-[#141025]' : 'bg-gray-100'
         }`}
       >
         {/* 1 */}
@@ -534,14 +542,14 @@ const ProductRegPageV1 = () => {
         {/* 2 */}
         <CustomButton
           onClick={() => {
-            if (!permission(canAdd, "No permission to add new product")) return;
+            if (!permission(canAdd, 'No permission to add new product')) return;
             setAddModal(true);
           }}
           icon={Redo}
           isDarkMode={isDarkMode}
           title="Add New Product"
           disabled={productIsLoading}
-          className={productIsLoading ? "opacity-50 cursor-not-allowed" : ""}
+          className={productIsLoading ? 'opacity-50 cursor-not-allowed' : ''}
         />
       </div>
 
@@ -556,7 +564,7 @@ const ProductRegPageV1 = () => {
           loading={productIsLoading}
           columns={columns}
           dataSource={filteredData}
-          scroll={{ x: true }}
+          scroll={{x: true}}
           bordered
           rowSelection={{
             selectedRowKeys,
@@ -567,19 +575,19 @@ const ProductRegPageV1 = () => {
             }),
           }}
           rowClassName={() =>
-            "hover:bg-[#1b122b]/30 !h-10 [&>td]:!py-1.5 [&>td]:!px-2"
+            'hover:bg-[#1b122b]/30 !h-10 [&>td]:!py-1.5 [&>td]:!px-2'
           }
           pagination={{
             total: filteredData?.length || 0,
             showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
+            pageSizeOptions: ['10', '20', '50', '100'],
             defaultPageSize: 10,
           }}
           title={() => (
             <div className="flex items-center justify-between">
               <div
                 className={`text-md mt-2 sm:mt-1 font-medium ${
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}
               >
                 Total Records: {filteredData?.length || 0}
@@ -599,7 +607,7 @@ const ProductRegPageV1 = () => {
                   icon={Trash2}
                   onClick={() => {
                     if (
-                      !permission(canDelete, "No permission to delete products")
+                      !permission(canDelete, 'No permission to delete products')
                     )
                       return;
                     setBulkDeleteModal(true);
@@ -619,29 +627,29 @@ const ProductRegPageV1 = () => {
         {addModal && (
           <Motion.div
             className={`fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm ${
-              isDarkMode ? "bg-black/50" : "bg-gray-900/10"
+              isDarkMode ? 'bg-black/50' : 'bg-gray-900/10'
             }`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{opacity: 0}}
+            animate={{opacity: 1}}
+            exit={{opacity: 0}}
           >
             <Motion.div
               className={`relative w-[90%] md:w-[70%] lg:w-[60%] xl:w-[50%] max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border px-5 sm:px-6 py-8 select-none ${
                 isDarkMode
-                  ? "bg-[#1A162B] text-white border-purple-600/10"
-                  : "bg-white text-gray-800 border-gray-200"
+                  ? 'bg-[#1A162B] text-white border-purple-600/10'
+                  : 'bg-white text-gray-800 border-gray-200'
               }`}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{scale: 0.9, opacity: 0}}
+              animate={{scale: 1, opacity: 1}}
+              exit={{scale: 0.9, opacity: 0}}
             >
               <h2
                 className={`flex items-center gap-2 text-lg font-semibold mb-5 ${
-                  isDarkMode ? "text-purple-400" : "text-purple-700"
+                  isDarkMode ? 'text-purple-400' : 'text-purple-700'
                 }`}
               >
                 <Edit size={18} />
-                {newProduct.productId ? "Edit Product" : "Add Product"}
+                {newProduct.productId ? 'Edit Product' : 'Add Product'}
               </h2>
 
               <div className="space-y-3">
@@ -658,7 +666,7 @@ const ProductRegPageV1 = () => {
                         value: type.criteriaSubTypeId,
                       }))}
                       onChange={(value) =>
-                        setNewProduct({ ...newProduct, productTypeId: value })
+                        setNewProduct({...newProduct, productTypeId: value})
                       }
                     />
                   </div>
@@ -678,7 +686,7 @@ const ProductRegPageV1 = () => {
                         setNewProduct({
                           ...newProduct,
                           productCategoryId: value,
-                          productSubCategoryId: "",
+                          productSubCategoryId: '',
                         })
                       }
                     />
@@ -752,7 +760,7 @@ const ProductRegPageV1 = () => {
                           ...newProduct,
                           productRefNo: e.target.value,
                         });
-                        if (searchedHsCode) setSearchedHsCode("");
+                        if (searchedHsCode) setSearchedHsCode('');
                       }}
                     />
 
@@ -762,10 +770,10 @@ const ProductRegPageV1 = () => {
                       className={`absolute right-2 bottom-1.5 h-7 w-7 rounded-full transition-all duration-300 flex items-center justify-center outline-none
                         ${
                           !newProduct.productRefNo
-                            ? "cursor-not-allowed opacity-50"
+                            ? 'cursor-not-allowed opacity-50'
                             : isDarkMode
-                              ? "text-purple-300 hover:bg-purple-500/30 focus:bg-purple-500/30 cursor-pointer active:scale-95"
-                              : "text-purple-600 hover:bg-purple-200 focus:bg-purple-200 cursor-pointer active:scale-95"
+                              ? 'text-purple-300 hover:bg-purple-500/30 focus:bg-purple-500/30 cursor-pointer active:scale-95'
+                              : 'text-purple-600 hover:bg-purple-200 focus:bg-purple-200 cursor-pointer active:scale-95'
                         }
                       `}
                       disabled={!newProduct.productRefNo}
@@ -800,7 +808,7 @@ const ProductRegPageV1 = () => {
                   <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
                     <label
                       className={`block text-xs font-semibold mb-1 ml-1 ${
-                        isDarkMode ? "text-gray-400" : "text-gray-600"
+                        isDarkMode ? 'text-gray-400' : 'text-gray-600'
                       }`}
                     >
                       HS Code Description
@@ -809,11 +817,11 @@ const ProductRegPageV1 = () => {
                       className={`p-3 rounded-xl border text-sm leading-relaxed flex items-start gap-2 ${
                         matchedHsCode
                           ? isDarkMode
-                            ? "bg-purple-900/10 border-purple-500/20 text-gray-200"
-                            : "bg-purple-50 border-purple-200 text-gray-700"
+                            ? 'bg-purple-900/10 border-purple-500/20 text-gray-200'
+                            : 'bg-purple-50 border-purple-200 text-gray-700'
                           : isDarkMode
-                            ? "bg-red-900/10 border-red-500/20 text-red-300"
-                            : "bg-red-50 border-red-200 text-red-600"
+                            ? 'bg-red-900/10 border-red-500/20 text-red-300'
+                            : 'bg-red-50 border-red-200 text-red-600'
                       }`}
                     >
                       {!matchedHsCode && (
@@ -823,7 +831,7 @@ const ProductRegPageV1 = () => {
                       )}
                       {matchedHsCode
                         ? matchedHsCode.description
-                        : "Description not available for this Code."}
+                        : 'Description not available for this Code.'}
                     </div>
                   </div>
                 )}
@@ -834,7 +842,7 @@ const ProductRegPageV1 = () => {
                 onSubmit={handleAddProduct}
                 isDarkMode={isDarkMode}
                 isSubmitting={isPending}
-                submitText={newProduct.productId ? "Update" : "Save"}
+                submitText={newProduct.productId ? 'Update' : 'Save'}
               />
             </Motion.div>
           </Motion.div>
@@ -861,6 +869,16 @@ const ProductRegPageV1 = () => {
         open={successModalOpen}
         message="Product deleted successfully!"
         onClose={() => setSuccessModalOpen(false)}
+      />
+
+      <ProductSettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => {
+          setSettingsModalOpen(false);
+          setSelectedProductForSetting(null);
+        }}
+        product={selectedProductForSetting}
+        isDarkMode={isDarkMode}
       />
     </>
   );

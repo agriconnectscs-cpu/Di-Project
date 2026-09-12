@@ -1,4 +1,3 @@
-import "./utils/api";
 import App from "./App.jsx";
 import "./index.css";
 import { createRoot } from "react-dom/client";
