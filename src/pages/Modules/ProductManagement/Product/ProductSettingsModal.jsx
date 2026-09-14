@@ -384,19 +384,19 @@ const ProductSettingsModal = ({isOpen, onClose, product, isDarkMode}) => {
         const rowErrors = {};
         const key = row.scenarioId || index;
 
-        const taxVal = Number(row.taxPercent);
-        if (
-          row.taxPercent === '' ||
-          row.taxPercent === null ||
-          row.taxPercent === undefined ||
-          isNaN(taxVal) ||
-          taxVal <= 0
-        ) {
-          rowErrors.taxPercent = 'Tax % must be greater than 0';
-          if (!firstErrorMessage)
-            firstErrorMessage = `Tax % must be greater than 0 for "${row.scenarioName}"`;
-          hasError = true;
-        }
+        // const taxVal = Number(row.taxPercent);
+        // if (
+        //   row.taxPercent === '' ||
+        //   row.taxPercent === null ||
+        //   row.taxPercent === undefined ||
+        //   isNaN(taxVal) ||
+        //   taxVal <= 0
+        // ) {
+        //   rowErrors.taxPercent = 'Tax % must be greater than 0';
+        //   if (!firstErrorMessage)
+        //     firstErrorMessage = `Tax % must be greater than 0 for "${row.scenarioName}"`;
+        //   hasError = true;
+        // }
 
         if (!row.sroSaleType || !String(row.sroSaleType).trim()) {
           rowErrors.sroSaleType = 'Sale Type is required';
@@ -890,7 +890,7 @@ const ProductSettingsModal = ({isOpen, onClose, product, isDarkMode}) => {
                           </th>
                           <th className="py-2.5 px-2 w-20 xl:w-24 text-center whitespace-nowrap">
                             Tax %{' '}
-                            <span className="text-red-500 font-bold">*</span>
+                            {/* <span className="text-red-500 font-bold">*</span> */}
                           </th>
                           <th className="py-2.5 px-2 w-40 xl:w-48 whitespace-nowrap">
                             Sale Type{' '}
