@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
-import {DatePicker} from 'antd';
+import { DatePicker } from 'antd';
 import toast from 'react-hot-toast';
-import {useEffect, useState, useMemo} from 'react';
-import {motion as Motion, AnimatePresence} from 'framer-motion';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import { useEffect, useState, useMemo } from 'react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Trash2,
   Redo,
@@ -17,18 +17,18 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-import {useTheme} from '../../../../ThemeProvider';
-import {handleApiResponse} from '../../../../utils/handleApiResponse';
+import { useTheme } from '../../../../ThemeProvider';
+import { handleApiResponse } from '../../../../utils/handleApiResponse';
 
-import {usePagePermissions} from '../../../../permissions';
+import { usePagePermissions } from '../../../../permissions';
 
-import {useGetAuth} from '../../../../hooks/useGetAuth';
-import {useGetUnits} from '../../../../hooks/useGetUnits';
+import { useGetAuth } from '../../../../hooks/useGetAuth';
+import { useGetUnits } from '../../../../hooks/useGetUnits';
 import useGlobalFilter from '../../../../hooks/useGlobalFilter';
-import {useGetCurrency} from '../../../../hooks/useGetCurrency';
-import {useGetInvoices} from '../../../../hooks/useGetInvoices';
-import {useCloseOnEscape} from '../../../../hooks/useCloseOnEscape';
-import {useGetProductScenarios} from '../../../../hooks/useGetProductScenarios';
+import { useGetCurrency } from '../../../../hooks/useGetCurrency';
+import { useGetInvoices } from '../../../../hooks/useGetInvoices';
+import { useCloseOnEscape } from '../../../../hooks/useCloseOnEscape';
+import { useGetProductScenarios } from '../../../../hooks/useGetProductScenarios';
 
 import CustomModal from '../../../../components/CustomModal';
 import CustomTable from '../../../../components/CustomTable';
@@ -47,16 +47,16 @@ import pdfIcon from '../../../../assets/pdf.webp';
 // Imports End ----------------
 
 const SalesTaxInvoicePage = () => {
-  const {isDarkMode} = useTheme();
+  const { isDarkMode } = useTheme();
   const queryClient = useQueryClient();
-  const {loginAccessToken} = useGetAuth();
+  const { loginAccessToken } = useGetAuth();
 
-  const {canAdd, canEdit, canDelete, canView, permission} =
+  const { canAdd, canEdit, canDelete, canView, permission } =
     usePagePermissions();
 
   // UI State
   const [addModal, setAddModal] = useState(false);
-  const [confirmModal, setConfirmModal] = useState({open: false, id: null});
+  const [confirmModal, setConfirmModal] = useState({ open: false, id: null });
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [shouldPreviewFlag, setShouldPreviewFlag] = useState(false);
@@ -178,7 +178,7 @@ const SalesTaxInvoicePage = () => {
   });
 
   //  Fetch Data List
-  const {data: products = []} = useQuery({
+  const { data: products = [] } = useQuery({
     queryKey: ['products', loginAccessToken],
     enabled: !!loginAccessToken,
 
@@ -205,14 +205,14 @@ const SalesTaxInvoicePage = () => {
     refetchOnReconnect: true,
   });
 
-  const {data: units = []} = useGetUnits();
-  const {data: currency = []} = useGetCurrency();
-  const {data: invoiceList = [], isLoading: isListLoading} = useGetInvoices(
+  const { data: units = [] } = useGetUnits();
+  const { data: currency = [] } = useGetCurrency();
+  const { data: invoiceList = [], isLoading: isListLoading } = useGetInvoices(
     dateFilters,
     advFilters
   );
 
-  const {data: productPriceList = [], isFetching: isPricingLoading} = useQuery({
+  const { data: productPriceList = [], isFetching: isPricingLoading } = useQuery({
     queryKey: [
       'activeProductPriceList',
       newInvoice.partyLocationId,
@@ -249,7 +249,7 @@ const SalesTaxInvoicePage = () => {
     refetchOnReconnect: true,
   });
 
-  const {data: autoInvoiceNo} = useQuery({
+  const { data: autoInvoiceNo } = useQuery({
     queryKey: ['autoInvoiceNo', loginAccessToken],
     queryFn: async () => {
       const res = await fetch('/api/DI/Invoice/GetAutoInvoiceNo', {
@@ -276,7 +276,7 @@ const SalesTaxInvoicePage = () => {
   });
 
   // Scenarios Query
-  const {data: scenarios = []} = useQuery({
+  const { data: scenarios = [] } = useQuery({
     queryKey: ['getScenarios', loginAccessToken],
     queryFn: async () => {
       const res = await fetch('/api/DBO/Data/GetCriteriaForInvoiceScenario', {
@@ -303,7 +303,7 @@ const SalesTaxInvoicePage = () => {
     })
   );
 
-  const {data: productScenarios = []} = useGetProductScenarios({
+  const { data: productScenarios = [] } = useGetProductScenarios({
     enabled: !!loginAccessToken && addModal,
   });
 
@@ -376,22 +376,22 @@ const SalesTaxInvoicePage = () => {
       );
 
       if (!hasChanges) return prev;
-      return {...prev, invoiceDetailDIRequests: updatedDetails};
+      return { ...prev, invoiceDetailDIRequests: updatedDetails };
     });
   }, [productScenarios, newInvoice.scenarioId, addModal]);
 
   useEffect(() => {
     if (autoInvoiceNo && addModal && newInvoice.invoiceId === 0) {
-      setNewInvoice((prev) => ({...prev, invoiceNo: autoInvoiceNo}));
+      setNewInvoice((prev) => ({ ...prev, invoiceNo: autoInvoiceNo }));
     }
   }, [autoInvoiceNo, addModal, newInvoice.invoiceId]);
 
   // Fetch Party Data
-  const {data: buyerData, isLoading: buyerDataIsLoading} = useQuery({
+  const { data: buyerData, isLoading: buyerDataIsLoading } = useQuery({
     queryKey: ['buyerData', loginAccessToken],
     queryFn: async () => {
       const res = await fetch('/api/CRM/Buyer/GetAll', {
-        headers: {Authorization: `Bearer ${loginAccessToken}`},
+        headers: { Authorization: `Bearer ${loginAccessToken}` },
       });
       const result = await handleApiResponse(res, 'Failed to fetch party data');
       return Array.isArray(result?.data) ? result.data : [];
@@ -404,7 +404,7 @@ const SalesTaxInvoicePage = () => {
   });
 
   // View Report Mutation
-  const {mutate: viewReport, isPending: isReportLoading} = useMutation({
+  const { mutate: viewReport, isPending: isReportLoading } = useMutation({
     mutationFn: async () => {
       const res = await fetch('/api/RPT/DI/GetSalesTaxInvoiceDetail', {
         method: 'POST',
@@ -421,6 +421,7 @@ const SalesTaxInvoicePage = () => {
             FromDate: dateFilters.FromDate,
             ToDate: dateFilters.ToDate,
           }),
+          dynamicFilters: advFilters.length > 0 ? advFilters : [],
           outputResultType: 'PDF',
           dataExportType: 'PDF',
         }),
@@ -458,6 +459,7 @@ const SalesTaxInvoicePage = () => {
             FromDate: dateFilters.FromDate,
             ToDate: dateFilters.ToDate,
           }),
+          dynamicFilters: advFilters.length > 0 ? advFilters : [],
           outputResultType: "EXCEL",
           dataExportType: "EXCEL",
         }),
@@ -478,8 +480,8 @@ const SalesTaxInvoicePage = () => {
   });
 
   // Print Single Invoice Mutation
-  const {mutate: printInvoice, isPending: isPrinting} = useMutation({
-    mutationFn: async ({invoiceId, report}) => {
+  const { mutate: printInvoice, isPending: isPrinting } = useMutation({
+    mutationFn: async ({ invoiceId, report }) => {
       if (!report?.appProductReportId) {
         throw new Error('No report layout selected.');
       }
@@ -512,7 +514,7 @@ const SalesTaxInvoicePage = () => {
       const url = result?.data;
       if (url) {
         window.open(url, '_blank');
-        setReportModal({open: false, invoiceId: null});
+        setReportModal({ open: false, invoiceId: null });
       } else {
         toast.error('PDF URL not returned by server.');
       }
@@ -523,7 +525,7 @@ const SalesTaxInvoicePage = () => {
   });
 
   //  Fetch Single Invoice
-  const {data: invoiceById, isLoading: invoiceIdIsLoading} = useQuery({
+  const { data: invoiceById, isLoading: invoiceIdIsLoading } = useQuery({
     queryKey: ['invoiceById', newInvoice.invoiceId],
     queryFn: async () => {
       const res = await fetch(
@@ -601,7 +603,7 @@ const SalesTaxInvoicePage = () => {
   }, [invoiceById]);
 
   //  Save / Update Invoice Mutation
-  const {mutate: saveInvoice, isPending} = useMutation({
+  const { mutate: saveInvoice, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await fetch('/api/DI/Invoice/Save', {
         method: 'POST',
@@ -624,7 +626,7 @@ const SalesTaxInvoicePage = () => {
         newInvoice.invoiceId;
 
       if (shouldPreviewFlag && savedId) {
-        setReportModal({open: true, invoiceId: savedId});
+        setReportModal({ open: true, invoiceId: savedId });
       }
 
       queryClient.invalidateQueries(['partyList']);
@@ -748,7 +750,7 @@ const SalesTaxInvoicePage = () => {
     const details = newInvoice.invoiceDetailDIRequests || [];
     const totals = calculateTotals();
 
-    const cleanInvoice = {...newInvoice};
+    const cleanInvoice = { ...newInvoice };
 
     const payload = {
       ...cleanInvoice,
@@ -807,11 +809,11 @@ const SalesTaxInvoicePage = () => {
   };
 
   //  Delete Invoice Mutation
-  const {mutate: deleteInvoice} = useMutation({
+  const { mutate: deleteInvoice } = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`/api/DI/Invoice/DeleteById?id=${id}`, {
         method: 'DELETE',
-        headers: {Authorization: `Bearer ${loginAccessToken}`},
+        headers: { Authorization: `Bearer ${loginAccessToken}` },
       });
 
       return handleApiResponse(res, 'Failed to delete invoice');
@@ -889,7 +891,7 @@ const SalesTaxInvoicePage = () => {
   };
 
   // Handlers
-  const handleDeleteClick = (id) => setConfirmModal({open: true, id});
+  const handleDeleteClick = (id) => setConfirmModal({ open: true, id });
 
   const handleConfirmDelete = () => {
     if (!confirmModal.id) return;
@@ -897,10 +899,10 @@ const SalesTaxInvoicePage = () => {
     deleteInvoice(confirmModal.id, {
       onSettled: () => setDeletingId(null),
     });
-    setConfirmModal({open: false, id: null});
+    setConfirmModal({ open: false, id: null });
   };
 
-  const handleCancelDelete = () => setConfirmModal({open: false, id: null});
+  const handleCancelDelete = () => setConfirmModal({ open: false, id: null });
 
   // auto select currency if only one currency is available
   useEffect(() => {
@@ -1078,7 +1080,7 @@ const SalesTaxInvoicePage = () => {
       ) {
         finalValue = 100;
       }
-      updated[index] = {...updated[index], [field]: finalValue};
+      updated[index] = { ...updated[index], [field]: finalValue };
 
       const item = updated[index];
 
@@ -1099,7 +1101,7 @@ const SalesTaxInvoicePage = () => {
       updated[index].taxAmount = taxAmt;
       updated[index].receivableAmount = total;
 
-      return {...prev, invoiceDetailDIRequests: updated};
+      return { ...prev, invoiceDetailDIRequests: updated };
     });
   };
 
@@ -1289,16 +1291,14 @@ const SalesTaxInvoicePage = () => {
             {value ? (
               <>
                 <span
-                  className={`text-[10px] font-extrabold uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400 opacity-80' : 'text-gray-500'
-                  }`}
+                  className={`text-[10px] font-extrabold uppercase tracking-wider ${isDarkMode ? 'text-gray-400 opacity-80' : 'text-gray-500'
+                    }`}
                 >
                   {label}
                 </span>
                 <span
-                  className={`truncate max-w-27.5 font-semibold -mt-0.5 ${
-                    isDarkMode ? 'text-purple-400' : 'text-[#4c1d95]'
-                  }`}
+                  className={`truncate max-w-27.5 font-semibold -mt-0.5 ${isDarkMode ? 'text-purple-400' : 'text-[#4c1d95]'
+                    }`}
                 >
                   {value}
                 </span>
@@ -1353,7 +1353,7 @@ const SalesTaxInvoicePage = () => {
             deleteDisabled={record.integrationStatus === 'Success'}
             onEdit={(rec) => {
               if (!permission(canEdit, 'No permission to edit invoice')) return;
-              setNewInvoice((prev) => ({...prev, invoiceId: rec.invoiceId}));
+              setNewInvoice((prev) => ({ ...prev, invoiceId: rec.invoiceId }));
             }}
             onDelete={(rec) => {
               if (!permission(canDelete, 'No permission to delete invoice'))
@@ -1364,11 +1364,10 @@ const SalesTaxInvoicePage = () => {
 
           {isPrinting && reportModal.invoiceId === record.invoiceId ? (
             <div
-              className={`h-8 w-8 rounded-xl border transition-colors duration-200 shadow-sm flex items-center justify-center ${
-                isDarkMode
+              className={`h-8 w-8 rounded-xl border transition-colors duration-200 shadow-sm flex items-center justify-center ${isDarkMode
                   ? 'bg-sky-500/10 border-sky-500/20 text-sky-400'
                   : 'bg-white border-gray-300 text-sky-600'
-              }`}
+                }`}
             >
               <Loader className="w-4 h-4 animate-spin" />
             </div>
@@ -1378,20 +1377,19 @@ const SalesTaxInvoicePage = () => {
                 if (!permission(canView, 'No permission to view invoice PDF'))
                   return;
                 if (reports.length === 1) {
-                  setReportModal({open: false, invoiceId: record.invoiceId});
+                  setReportModal({ open: false, invoiceId: record.invoiceId });
                   printInvoice({
                     invoiceId: record.invoiceId,
                     report: reports[0],
                   });
                 } else {
-                  setReportModal({open: true, invoiceId: record.invoiceId});
+                  setReportModal({ open: true, invoiceId: record.invoiceId });
                 }
               }}
-              className={`flex items-center justify-center h-8 w-8 rounded-full transition-all duration-300 ${
-                isDarkMode
+              className={`flex items-center justify-center h-8 w-8 rounded-full transition-all duration-300 ${isDarkMode
                   ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20 hover:bg-sky-500/25 hover:text-sky-300 hover:border-sky-500/40'
                   : 'bg-sky-50 text-sky-600 border border-sky-100 hover:bg-sky-100 hover:border-sky-200'
-              } shadow-sm active:scale-90 group`}
+                } shadow-sm active:scale-90 group`}
               title="Preview PDF"
             >
               <img
@@ -1409,9 +1407,8 @@ const SalesTaxInvoicePage = () => {
   return (
     <>
       <div
-        className={`flex flex-col md:flex-col lg:flex-row items-center justify-between rounded-lg sm:rounded-full sm:items-center  px-3 sm:px-3 sm:pl-5 pb-5 lg:pb-0 transition-colors duration-200  ${
-          isDarkMode ? ' bg-[#141025]' : 'bg-gray-50'
-        }`}
+        className={`flex flex-col md:flex-col lg:flex-row items-center justify-between rounded-lg sm:rounded-full sm:items-center  px-3 sm:px-3 sm:pl-5 pb-5 lg:pb-0 transition-colors duration-200  ${isDarkMode ? ' bg-[#141025]' : 'bg-gray-50'
+          }`}
       >
         {/* 1 */}
         <Breadcrumb />
@@ -1435,13 +1432,12 @@ const SalesTaxInvoicePage = () => {
             title={isReportLoading ? 'Generating...' : 'View Report'}
             disabled={isReportLoading}
             className={`${isReportLoading ? '[&>svg]:animate-spin shrink-0' : ''} 
-              ${
-                isDarkMode
-                  ? 'text-emerald-400! border-emerald-500/30! bg-emerald-500/5! hover:bg-emerald-500/20! hover:text-emerald-300! hover:border-emerald-500/50!'
-                  : 'text-emerald-600! border-emerald-200! bg-emerald-50! hover:bg-emerald-600! hover:text-white! hover:border-emerald-600!'
+              ${isDarkMode
+                ? 'text-emerald-400! border-emerald-500/30! bg-emerald-500/5! hover:bg-emerald-500/20! hover:text-emerald-300! hover:border-emerald-500/50!'
+                : 'text-emerald-600! border-emerald-200! bg-emerald-50! hover:bg-emerald-600! hover:text-white! hover:border-emerald-600!'
               } shadow-sm transition-all duration-300`}
           />
-       <CustomButton
+          <CustomButton
             onClick={() => {
               if (!permission(canView, "No permission to view report")) return;
               exportReport();
@@ -1504,9 +1500,8 @@ const SalesTaxInvoicePage = () => {
 
       <div className="mb-2 px-1">
         <p
-          className={`text-xs sm:text-sm ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}
+          className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+            }`}
         >
           Data loaded from{' '}
           <span className="font-semibold">
@@ -1564,11 +1559,10 @@ const SalesTaxInvoicePage = () => {
         {/* Close Button */}
         <button
           onClick={handleCloseModal}
-          className={`absolute top-4 right-4 sm:top-6 sm:right-8 z-60 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90 group ${
-            isDarkMode
+          className={`absolute top-4 right-4 sm:top-6 sm:right-8 z-60 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-90 group ${isDarkMode
               ? 'bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 hover:border-red-500/30'
               : 'bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 border border-gray-200 hover:border-red-200'
-          } shadow-sm backdrop-blur-md cursor-pointer `}
+            } shadow-sm backdrop-blur-md cursor-pointer `}
           title="Close (Esc)"
         >
           <X
@@ -1579,9 +1573,8 @@ const SalesTaxInvoicePage = () => {
 
         {/* Header */}
         <h2
-          className={`flex items-center gap-2 text-xl font-semibold mb-6 ${
-            isDarkMode ? 'text-purple-400' : 'text-purple-700'
-          }`}
+          className={`flex items-center gap-2 text-xl font-semibold mb-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-700'
+            }`}
         >
           <Edit size={20} />
           {newInvoice.invoiceId
@@ -1594,9 +1587,8 @@ const SalesTaxInvoicePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {/* Party Info */}
             <div
-              className={`rounded-xl p-4 border space-y-3 shadow-md ${
-                isDarkMode ? ' bg-black/5 border-white/10' : ' border-black/10'
-              }`}
+              className={`rounded-xl p-4 border space-y-3 shadow-md ${isDarkMode ? ' bg-black/5 border-white/10' : ' border-black/10'
+                }`}
             >
               <h2 className="text-xl font-semibold text-(--secondary-color)">
                 Buyer Information
@@ -1686,9 +1678,8 @@ const SalesTaxInvoicePage = () => {
 
             {/* Basic Info */}
             <div
-              className={` rounded-xl p-4 border space-y-3 shadow-md ${
-                isDarkMode ? ' bg-black/5 border-white/10' : ' border-black/10'
-              }`}
+              className={` rounded-xl p-4 border space-y-3 shadow-md ${isDarkMode ? ' bg-black/5 border-white/10' : ' border-black/10'
+                }`}
             >
               <h2 className="text-xl font-semibold text-(--secondary-color)">
                 Basic Information
@@ -1731,9 +1722,8 @@ const SalesTaxInvoicePage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label
-                    className={`text-sm font-medium ${
-                      isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                    }`}
+                    className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                      }`}
                   >
                     Invoice Date{' '}
                     <span className="text-red-500 font-semibold">*</span>
@@ -1741,11 +1731,10 @@ const SalesTaxInvoicePage = () => {
 
                   <DatePicker
                     format="DD-MM-YYYY"
-                    className={`custom-datepicker w-full! ${
-                      isDarkMode
+                    className={`custom-datepicker w-full! ${isDarkMode
                         ? 'bg-black/10! border-gray-700! text-white!'
                         : 'bg-gray-100/50! border-gray-300! text-gray-900!'
-                    }`}
+                      }`}
                     value={
                       newInvoice.invoiceOn ? dayjs(newInvoice.invoiceOn) : null
                     }
@@ -1777,21 +1766,19 @@ const SalesTaxInvoicePage = () => {
         {/* Product Table */}
         <div className="space-y-3">
           <div
-            className={`rounded-xl border ${
-              isDarkMode ? 'border-white/10' : 'border-gray-200'
-            }`}
+            className={`rounded-xl border ${isDarkMode ? 'border-white/10' : 'border-gray-200'
+              }`}
           >
             <div
               className="w-full overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 custom-scrollbar"
-              style={{WebkitOverflowScrolling: 'touch'}}
+              style={{ WebkitOverflowScrolling: 'touch' }}
             >
               <div className="min-w-0">
                 <div
-                  className={`hidden lg:grid grid-cols-[35px_minmax(180px,3.5fr)_60px_70px_85px_95px_60px_85px_60px_85px_105px_35px] gap-2 p-4 lg:px-3 lg:py-2.5 text-[10px] xl:text-[11px] font-bold uppercase tracking-wider border-b ${
-                    isDarkMode
+                  className={`hidden lg:grid grid-cols-[35px_minmax(180px,3.5fr)_60px_70px_85px_95px_60px_85px_60px_85px_105px_35px] gap-2 p-4 lg:px-3 lg:py-2.5 text-[10px] xl:text-[11px] font-bold uppercase tracking-wider border-b ${isDarkMode
                       ? 'bg-[#1f1a36] border-white/10 text-purple-300'
                       : 'bg-gray-200/50 border-gray-200 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <div className="text-center">Sr.</div>
                   <div className="pl-2">Product Description</div>
@@ -1813,9 +1800,9 @@ const SalesTaxInvoicePage = () => {
                   const matchedScenario =
                     hasProduct && newInvoice.scenarioId
                       ? findProductScenario(
-                          item.productId,
-                          newInvoice.scenarioId
-                        )
+                        item.productId,
+                        newInvoice.scenarioId
+                      )
                       : null;
                   const isScenarioMissing =
                     hasProduct &&
@@ -1829,15 +1816,14 @@ const SalesTaxInvoicePage = () => {
                           flex flex-col lg:grid lg:grid-cols-[35px_minmax(180px,3.5fr)_60px_70px_85px_95px_60px_85px_60px_85px_105px_35px] 
                           gap-3 lg:gap-2 p-4 lg:px-3 lg:py-2 items-stretch lg:items-center 
                           hover:bg-purple-500/5 transition-all duration-300 border-b last:border-b-0 rounded-xl lg:rounded-none mb-4 lg:mb-0
-                          ${
-                            isScenarioMissing
-                              ? isDarkMode
-                                ? 'bg-rose-950/20 lg:bg-rose-950/10 border-rose-500/30'
-                                : 'bg-rose-50/60 lg:bg-rose-50/30 border-rose-200'
-                              : isDarkMode
-                                ? 'bg-black/5 lg:bg-transparent border-white/5'
-                                : 'bg-white lg:bg-transparent border-gray-100 shadow-sm lg:shadow-none'
-                          } 
+                          ${isScenarioMissing
+                          ? isDarkMode
+                            ? 'bg-rose-950/20 lg:bg-rose-950/10 border-rose-500/30'
+                            : 'bg-rose-50/60 lg:bg-rose-50/30 border-rose-200'
+                          : isDarkMode
+                            ? 'bg-black/5 lg:bg-transparent border-white/5'
+                            : 'bg-white lg:bg-transparent border-gray-100 shadow-sm lg:shadow-none'
+                        } 
                           
                         `}
                     >
@@ -1848,13 +1834,12 @@ const SalesTaxInvoicePage = () => {
                             Line Item
                           </span>
                           <span
-                            className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                              isScenarioMissing
+                            className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${isScenarioMissing
                                 ? 'bg-rose-500 text-white'
                                 : isDarkMode
                                   ? 'bg-white/10 text-gray-400'
                                   : 'bg-gray-200 text-gray-600'
-                            }`}
+                              }`}
                           >
                             {index + 1}
                           </span>
@@ -1863,11 +1848,10 @@ const SalesTaxInvoicePage = () => {
                         <button
                           type="button"
                           title="Delete Line Item"
-                          className={`lg:hidden p-2 rounded-xl transition-all duration-200 active:scale-95 transform ${
-                            isDarkMode
+                          className={`lg:hidden p-2 rounded-xl transition-all duration-200 active:scale-95 transform ${isDarkMode
                               ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
                               : 'bg-red-50 text-red-600 hover:bg-red-100'
-                          }`}
+                            }`}
                           onClick={() => {
                             const updated = [
                               ...newInvoice.invoiceDetailDIRequests,
@@ -2018,11 +2002,10 @@ const SalesTaxInvoicePage = () => {
                             Unit
                           </label>
                           <div
-                            className={`h-10 flex items-center justify-center px-2 rounded-lg border-none font-medium text-sm transition-all duration-300 ${
-                              isDarkMode
+                            className={`h-10 flex items-center justify-center px-2 rounded-lg border-none font-medium text-sm transition-all duration-300 ${isDarkMode
                                 ? 'bg-white/5 text-purple-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] hover:bg-white/10'
                                 : 'bg-purple-50 text-purple-700 shadow-[inset_0_1px_1px_rgba(0,0,0,0.05)] hover:bg-purple-100'
-                            }`}
+                              }`}
                           >
                             {products.find(
                               (p) => p.productId === item.productId
@@ -2081,11 +2064,10 @@ const SalesTaxInvoicePage = () => {
                             Amount
                           </label>
                           <div
-                            className={`h-10 flex items-center justify-end px-3 rounded-lg border-none font-semibold text-xs transition-all duration-300 ${
-                              isDarkMode
+                            className={`h-10 flex items-center justify-end px-3 rounded-lg border-none font-semibold text-xs transition-all duration-300 ${isDarkMode
                                 ? 'bg-white/5 text-gray-300'
                                 : 'bg-gray-100 text-gray-700'
-                            }`}
+                              }`}
                           >
                             {Number(item.orderAmount).toLocaleString(
                               undefined,
@@ -2144,9 +2126,9 @@ const SalesTaxInvoicePage = () => {
                               updated[index].discountAmount = discAmountVal;
                               updated[index].discPercent = orderAmount
                                 ? Math.min(
-                                    (discAmount / orderAmount) * 100,
-                                    100
-                                  )
+                                  (discAmount / orderAmount) * 100,
+                                  100
+                                )
                                 : 0;
 
                               // Recalculate based on new discount
@@ -2238,11 +2220,10 @@ const SalesTaxInvoicePage = () => {
                           Net Total
                         </label>
                         <div
-                          className={`h-10 flex items-center justify-end px-3 rounded-lg border-none font-bold text-sm transition-all duration-300 ${
-                            isDarkMode
+                          className={`h-10 flex items-center justify-end px-3 rounded-lg border-none font-bold text-sm transition-all duration-300 ${isDarkMode
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                               : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                          }`}
+                            }`}
                         >
                           {Number(item.receivableAmount).toLocaleString(
                             undefined,
@@ -2259,11 +2240,10 @@ const SalesTaxInvoicePage = () => {
                         <button
                           type="button"
                           title="Delete Line Item"
-                          className={`p-2 rounded-full transition-all duration-200 ease-in-out active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                            isDarkMode
+                          className={`p-2 rounded-full transition-all duration-200 ease-in-out active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isDarkMode
                               ? 'text-red-400 hover:text-red-300 focus-visible:ring-red-400/60 focus-visible:ring-offset-[#141025]'
                               : 'text-red-600 hover:text-red-700 focus-visible:ring-red-600/60 focus-visible:ring-offset-white'
-                          }`}
+                            }`}
                           onClick={() => {
                             const updated = [
                               ...newInvoice.invoiceDetailDIRequests,
@@ -2323,18 +2303,16 @@ const SalesTaxInvoicePage = () => {
           {/*  FOOTER */}
           <div className="flex flex-col md:flex-row justify-between items-start mt-8 gap-4">
             <div
-              className={`w-full md:w-96 rounded-2xl shadow-lg border overflow-hidden ${
-                isDarkMode
+              className={`w-full md:w-96 rounded-2xl shadow-lg border overflow-hidden ${isDarkMode
                   ? 'bg-[#141025] border-white/10'
                   : 'bg-white border-gray-100'
-              }`}
+                }`}
             >
               <div
-                className={`px-6 py-3 border-b ${
-                  isDarkMode
+                className={`px-6 py-3 border-b ${isDarkMode
                     ? 'bg-white/5 border-white/5'
                     : 'bg-gray-50 border-gray-100'
-                }`}
+                  }`}
               >
                 <h4 className="font-semibold text-sm uppercase tracking-wider">
                   Invoice Summary
@@ -2398,11 +2376,10 @@ const SalesTaxInvoicePage = () => {
                         </div>
                         <div className="text-right">
                           <span
-                            className={`text-3xl font-black tracking-tight ${
-                              isDarkMode
+                            className={`text-3xl font-black tracking-tight ${isDarkMode
                                 ? 'text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.2)]'
                                 : 'text-purple-700'
-                            }`}
+                              }`}
                           >
                             <small className="text-xs font-semibold mr-1 opacity-50">
                               PKR
@@ -2427,11 +2404,10 @@ const SalesTaxInvoicePage = () => {
               >
                 <button
                   onClick={handleCloseModal}
-                  className={`h-12 sm:h-10 px-4 sm:px-6 flex items-center justify-center gap-2 rounded-xl sm:rounded-full cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                    isDarkMode
+                  className={`h-12 sm:h-10 px-4 sm:px-6 flex items-center justify-center gap-2 rounded-xl sm:rounded-full cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isDarkMode
                       ? 'border border-gray-600 text-gray-300 hover:bg-[#2a1b3d] focus-visible:ring-gray-400/40 focus-visible:ring-offset-[#141025]'
                       : 'border border-gray-300 text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-400/60 focus-visible:ring-offset-white'
-                  }`}
+                    }`}
                 >
                   <X size={16} className="sm:hidden lg:block" />
                   <span>Close</span>
@@ -2447,14 +2423,13 @@ const SalesTaxInvoicePage = () => {
                       })
                     }
                     disabled={isPending || isPrinting}
-                    className={`h-12 sm:h-10 px-4 sm:px-6 flex items-center justify-center gap-2 rounded-xl sm:rounded-full border cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                      isDarkMode
+                    className={`h-12 sm:h-10 px-4 sm:px-6 flex items-center justify-center gap-2 rounded-xl sm:rounded-full border cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isDarkMode
                         ? 'border-sky-500/50 text-sky-400 hover:bg-sky-500/10 focus-visible:ring-sky-400/60 focus-visible:ring-offset-[#141025]'
                         : 'border-sky-600 text-sky-600 hover:bg-sky-50 focus-visible:ring-sky-600/60 focus-visible:ring-offset-white'
-                    }`}
+                      }`}
                   >
                     {isPrinting &&
-                    reportModal.invoiceId === newInvoice.invoiceId ? (
+                      reportModal.invoiceId === newInvoice.invoiceId ? (
                       <Loader size={16} className="animate-spin" />
                     ) : (
                       <Eye size={16} className="sm:hidden lg:block" />
@@ -2467,14 +2442,13 @@ const SalesTaxInvoicePage = () => {
               <button
                 onClick={() => handleAddInvoice(true)}
                 disabled={isPending}
-                className={`h-12 sm:h-10 px-6 sm:min-w-40 flex items-center justify-center gap-2 rounded-xl sm:rounded-full text-white cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                  isPending && shouldPreviewFlag
+                className={`h-12 sm:h-10 px-6 sm:min-w-40 flex items-center justify-center gap-2 rounded-xl sm:rounded-full text-white cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isPending && shouldPreviewFlag
                     ? 'bg-emerald-800 cursor-not-allowed'
                     : 'bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 ' +
-                      (isDarkMode
-                        ? 'focus-visible:ring-emerald-400/60 focus-visible:ring-offset-[#141025]'
-                        : 'focus-visible:ring-emerald-600/60 focus-visible:ring-offset-white')
-                }`}
+                    (isDarkMode
+                      ? 'focus-visible:ring-emerald-400/60 focus-visible:ring-offset-[#141025]'
+                      : 'focus-visible:ring-emerald-600/60 focus-visible:ring-offset-white')
+                  }`}
               >
                 {isPending && shouldPreviewFlag ? (
                   <Loader size={18} className="animate-spin" />
@@ -2487,14 +2461,13 @@ const SalesTaxInvoicePage = () => {
               <button
                 onClick={() => handleAddInvoice(false)}
                 disabled={isPending}
-                className={`h-12 sm:h-10 px-8 sm:min-w-37.5 flex items-center justify-center gap-2 rounded-xl sm:rounded-full text-white cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
-                  isPending && !shouldPreviewFlag
+                className={`h-12 sm:h-10 px-8 sm:min-w-37.5 flex items-center justify-center gap-2 rounded-xl sm:rounded-full text-white cursor-pointer transition-all active:scale-95 transform outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${isPending && !shouldPreviewFlag
                     ? 'bg-purple-800 cursor-not-allowed'
                     : 'bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-500/20 ' +
-                      (isDarkMode
-                        ? 'focus-visible:ring-purple-400/60 focus-visible:ring-offset-[#141025]'
-                        : 'focus-visible:ring-purple-600/60 focus-visible:ring-offset-white')
-                }`}
+                    (isDarkMode
+                      ? 'focus-visible:ring-purple-400/60 focus-visible:ring-offset-[#141025]'
+                      : 'focus-visible:ring-purple-600/60 focus-visible:ring-offset-white')
+                  }`}
               >
                 {isPending && !shouldPreviewFlag ? (
                   <Loader size={18} className="animate-spin" />
@@ -2542,20 +2515,19 @@ const SalesTaxInvoicePage = () => {
         {reportModal.open && (
           <Motion.div
             className="fixed inset-0 z-70 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
-            initial={{opacity: 0}}
-            animate={{opacity: 1}}
-            exit={{opacity: 0}}
-            onClick={() => setReportModal({open: false, invoiceId: null})}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setReportModal({ open: false, invoiceId: null })}
           >
             <Motion.div
-              className={`w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden ${
-                isDarkMode
+              className={`w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden ${isDarkMode
                   ? 'bg-[#1B172D] text-white border border-white/10'
                   : 'bg-white text-gray-800 border border-gray-200'
-              }`}
-              initial={{scale: 0.9, opacity: 0}}
-              animate={{scale: 1, opacity: 1}}
-              exit={{scale: 0.9, opacity: 0}}
+                }`}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
@@ -2566,7 +2538,7 @@ const SalesTaxInvoicePage = () => {
                   </p>
                 </div>
                 <button
-                  onClick={() => setReportModal({open: false, invoiceId: null})}
+                  onClick={() => setReportModal({ open: false, invoiceId: null })}
                   className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                 >
                   <X size={20} />
@@ -2578,25 +2550,23 @@ const SalesTaxInvoicePage = () => {
                   <div
                     key={report.appProductReportId}
                     onClick={() => setSelectedReport(report)}
-                    className={`group flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${
-                      selectedReport?.appProductReportId ===
-                      report.appProductReportId
+                    className={`group flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 ${selectedReport?.appProductReportId ===
+                        report.appProductReportId
                         ? 'border-purple-600 bg-purple-600/10 shadow-[0_0_20px_rgba(147,51,234,0.1)]'
                         : 'border-transparent bg-white/5 hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        selectedReport?.appProductReportId ===
-                        report.appProductReportId
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selectedReport?.appProductReportId ===
+                          report.appProductReportId
                           ? 'border-purple-600'
                           : 'border-gray-500'
-                      }`}
+                        }`}
                     >
                       {selectedReport?.appProductReportId ===
                         report.appProductReportId && (
-                        <div className="w-3 h-3 rounded-full bg-purple-600 animate-in fade-in zoom-in duration-300" />
-                      )}
+                          <div className="w-3 h-3 rounded-full bg-purple-600 animate-in fade-in zoom-in duration-300" />
+                        )}
                     </div>
                     <div className="flex-1">
                       <p
@@ -2623,7 +2593,7 @@ const SalesTaxInvoicePage = () => {
 
               <div className="px-6 py-4 bg-black/20 flex gap-3">
                 <button
-                  onClick={() => setReportModal({open: false, invoiceId: null})}
+                  onClick={() => setReportModal({ open: false, invoiceId: null })}
                   className="flex-1 py-3 font-bold rounded-xl hover:bg-white/5 transition-colors"
                 >
                   Cancel
@@ -2642,10 +2612,9 @@ const SalesTaxInvoicePage = () => {
                   className={`
                     flex-2 py-3 font-bold rounded-xl transition-all duration-300
                     flex items-center justify-center gap-2.5 group
-                    ${
-                      !selectedReport || isPrinting || !reportModal.invoiceId
-                        ? 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 cursor-not-allowed border border-transparent'
-                        : 'bg-linear-to-br from-purple-600 to-violet-700 hover:from-purple-500 hover:to-violet-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-[0.98]'
+                    ${!selectedReport || isPrinting || !reportModal.invoiceId
+                      ? 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-500 cursor-not-allowed border border-transparent'
+                      : 'bg-linear-to-br from-purple-600 to-violet-700 hover:from-purple-500 hover:to-violet-600 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-[0.98]'
                     }
                   `}
                 >
